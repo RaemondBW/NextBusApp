@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">nextBus</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="agency">Transit Agency</string>
+    <string name="Route">route</string>
+    <string name="route">Route</string>
+    <string name="direction">Direction</string>
+    <string name="stop">Stop</string>
+    <string name="get">Get Prediction</string>
+
+</resources>
