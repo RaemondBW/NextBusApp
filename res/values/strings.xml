@@ -10,5 +10,6 @@
     <string name="direction">Direction</string>
     <string name="stop">Stop</string>
     <string name="get">Get Prediction</string>
+    <string name="time"></string>
 
 </resources>
