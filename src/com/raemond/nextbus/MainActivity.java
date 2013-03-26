@@ -28,6 +28,7 @@ import android.os.StrictMode;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.util.Log;
@@ -36,8 +37,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -48,10 +51,10 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	/*Spinner agencyspinner;
+	Spinner agencyspinner;
 	Spinner routespinner;
 	Spinner directionspinner;
-	Spinner stopspinner;*/
+	Spinner stopspinner;
 	ArrayList <Bus_Stop> stops = new ArrayList<Bus_Stop>();
 	String agency;
 	String route;
@@ -67,9 +70,6 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
-		
-		//create the list of agencies
-		new RetrieveAgencies().execute(" ");
 		
 		// gets the activity's default ActionBar
 		ActionBar actionBar = getActionBar();
@@ -159,73 +159,49 @@ public class MainActivity extends Activity {
     	// same as using a normal menu
     	switch(item.getItemId()) {
     	case R.id.item_refresh:
-    		/*String agency = "actransit";
-    		String route = "52";
-    		String direction = "52_53_0";
-    		String stop = "57955";
-    		String url = new String();
-    		url = "http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=" + agency + "&stopId=" + stop + "&routeTag=" + route;
-    		Log.v("url",url);
-    		new RetrievePrediction().execute(url);*/
     		makeToast("Refreshing...");
     		for (Bus_Stop stop: stops) {
     			stop.refreshStop();
     		}
     		break;
     	case R.id.item_new:
-    		//makeToast("Adding...");
-    		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-    		builder.setTitle("pick your transit agency:");
-    		//builder.setIcon(R.drawable.snowflake);
-    		//ArrayList<String> items = getAgencies();
-    		new RetrieveAgencies().execute(" ");
-    		final String[] items = (String []) agencies.toArray(new String[0]);
     		
-    		builder.setSingleChoiceItems(items, 0, new DialogInterface.OnClickListener() {
-    		//builder.setItems(items, new DialogInterface.OnClickListener() {
-        		public void onClick(DialogInterface dialog, int item) {
-        	        //Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
-        	        agency = items[item];
-        	        new RetrieveRoutes().execute(" ");
-        	    }
-
-        	});
+    		//create the list of agencies
+    		AsyncTask<String, Void, String[]> task = new RetrieveAgencies().execute(" ");
+    		try {
+				task.get(1000, TimeUnit.MILLISECONDS);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     		
-    		builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                    // User clicked OK, so save the mSelectedItems results somewhere
-                    // or return them to the component that opened the dialog
-                	AlertDialog.Builder routebuilder = new AlertDialog.Builder(MainActivity.this);
-            		routebuilder.setTitle("pick your bus route:");
-                	/*AsyncTask<String, Void, String[]> temp = new RetrieveRoutes().execute(" ");
-                	try {
-						temp.get(1000, TimeUnit.MILLISECONDS);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}*/
-                	final String[] routelist = (String []) routes.toArray(new String[0]);
-                	//builder.setSingleChoiceItems(routelist, 0, new DialogInterface.OnClickListener() {
-                	routebuilder.setItems(routelist, new DialogInterface.OnClickListener() {
-                		public void onClick(DialogInterface dialog, int item) {
-                	        Toast.makeText(getApplicationContext(), routelist[item], Toast.LENGTH_SHORT).show();
-                	        route = routelist[item];
-                	    }
-                	});
-                	AlertDialog routealert = routebuilder.create();
-                	routealert.show();
-                }
-            });
-            builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                    
-                }
-            });
-    		AlertDialog alert = builder.create();
-        	alert.show();
-    		
+    		final Dialog dialog = new Dialog((Context) this);
+			dialog.setContentView(R.layout.activity_main);
+			dialog.setTitle("pick your stop:");
+ 
+			// set the custom dialog components - text, image and button
+			agencyspinner = (Spinner) dialog.findViewById(R.id.agencySpinner);
+			ArrayAdapter<String> agencyArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,agencies);
+			agencyspinner.setAdapter(agencyArrayAdapter);
+			agencyspinner.setOnItemSelectedListener(new agencylistener());
+ 
+			Button dialogButton = (Button) dialog.findViewById(R.id.addBusStop);
+			// if button is clicked, close the custom dialog
+			dialogButton.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					dialog.dismiss();
+				}
+			});
+ 
+			dialog.show();
+			
+			
+			routespinner = (Spinner) dialog.findViewById(R.id.routeSpinner);
+			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
+					android.R.layout.simple_expandable_list_item_1,routes);//getRoutes(agency));
+			routespinner.setAdapter(routeArrayAdapter);
+			routespinner.setOnItemSelectedListener(new routelistener());
     		
     		
     		/*final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -234,7 +210,8 @@ public class MainActivity extends Activity {
     		linearLayout.addView(temp);
     		
     		TextView stops = (TextView) temp.findViewById(R.id.bus_stop);
-    		stops.setText("test");*/
+    		Bus_Stop new_stop = new Bus_Stop(agency,"AC Transit", route, "Hearst Av & Le Roy Av", stop, temp);
+			stops.add(new_stop);*/
         	
     		break;
     		
@@ -296,6 +273,7 @@ public class MainActivity extends Activity {
 					Node nNode = nList.item(i);
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
+						//Log.v(eElement.getAttribute("title"),eElement.getAttribute("tag"));
 						agencies.add(eElement.getAttribute("title"));
 						agencymap.put(eElement.getAttribute("title"),eElement.getAttribute("tag"));
 					}
@@ -315,9 +293,9 @@ public class MainActivity extends Activity {
 
 	}
 	
-	//private static ArrayList<String> getAgencies() {
-    /*private static String[] getAgencies() {
-		//ArrayList<String> agencies = new ArrayList<String>();
+	/*private static ArrayList<String> getAgencies() {
+    //private static String[] getAgencies() {
+		ArrayList<String> agencies = new ArrayList<String>();
 		URL url;
 		URLConnection connection;
 		DocumentBuilder dBuilder;
@@ -342,8 +320,8 @@ public class MainActivity extends Activity {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//return agencies;
-		return (String[]) agencies.toArray(new String[0]);
+		return agencies;
+		//return (String[]) agencies.toArray(new String[0]);
 	}*/
 	
     class RetrieveRoutes extends AsyncTask<String, Void, String[]> {
@@ -365,9 +343,7 @@ public class MainActivity extends Activity {
 					Node nNode = nList.item(i);
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
-						//System.out.println("Route Name: " + eElement.getAttribute("title"));
-						//System.out.println("Route Tag: " + eElement.getAttribute("tag"));
-						//System.out.println("--------------------------");
+						Log.v("route", eElement.getAttribute("title"));
 						routes.add(eElement.getAttribute("title"));
 					}
 				}
@@ -388,6 +364,7 @@ public class MainActivity extends Activity {
     
 	/*public static ArrayList<String> getRoutes(String agency) {
 		ArrayList<String> routes = new ArrayList<String>();
+		Log.v("Get routes", "called");
 		URL url;
 		URLConnection connection;
 		DocumentBuilder dBuilder;
@@ -404,9 +381,7 @@ public class MainActivity extends Activity {
 				Node nNode = nList.item(i);
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 					Element eElement = (Element) nNode;
-					//System.out.println("Route Name: " + eElement.getAttribute("title"));
-					//System.out.println("Route Tag: " + eElement.getAttribute("tag"));
-					//System.out.println("--------------------------");
+					Log.v("Route", eElement.getAttribute("title"));
 					routes.add(eElement.getAttribute("title"));
 				}
 			}
@@ -414,7 +389,7 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
 		return routes;
-	}
+	}*/
 	
 	public static ArrayList<String> getDirection(String agency, String route) {//changed type from bool to arraylist
 		ArrayList<String> directions = new ArrayList<String>();
@@ -449,13 +424,6 @@ public class MainActivity extends Activity {
 		}
 		//return useForUI;
 		return directions;
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
 	}
 	
 	public static ArrayList<String> getStops(String agency, String route, String direction) {
@@ -517,12 +485,19 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View arg1, int pos,
 				long id) {
-			routespinner = (Spinner)findViewById(R.id.routeSpinner);
+			//routespinner = (Spinner) findViewById(R.id.routeSpinner);
 			agency = agencymap.get(parent.getItemAtPosition(pos).toString());
-			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
+			AsyncTask<String, Void, String[]> task = new RetrieveRoutes().execute(" ");
+			try {
+				task.get(1000, TimeUnit.MILLISECONDS);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			/*ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
 					android.R.layout.simple_expandable_list_item_1,getRoutes(agency));
 			routespinner.setAdapter(routeArrayAdapter);
-			routespinner.setOnItemSelectedListener(new routelistener());
+			routespinner.setOnItemSelectedListener(new routelistener());*/
 		}
 
 		@Override
@@ -566,5 +541,5 @@ public class MainActivity extends Activity {
 			// TODO Auto-generated method stub
 
 		}
-	}*/
+	}
 }

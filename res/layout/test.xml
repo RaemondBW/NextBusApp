@@ -11,8 +11,9 @@
         android:divider="#00000000"
         android:dividerHeight="10dp"
         android:orientation="vertical"
-        android:showDividers="middle" 
-	>
+        android:paddingBottom="7dp"
+        android:paddingTop="7dp"
+        android:showDividers="middle" >
 
         <!--<FrameLayout
             android:layout_width="match_parent"
