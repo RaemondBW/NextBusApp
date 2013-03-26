@@ -1,9 +1,13 @@
 package com.raemond.nextbus;
 
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,7 +27,9 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,18 +53,23 @@ public class MainActivity extends Activity {
 	Spinner directionspinner;
 	Spinner stopspinner;*/
 	ArrayList <Bus_Stop> stops = new ArrayList<Bus_Stop>();
-	/*String agency;
+	String agency;
 	String route;
 	String direction;
-	String stop;*/
-	/*static HashMap<String,String> agencymap;
+	String stop;
+	static HashMap<String,String> agencymap;
 	static HashMap<String,String> directionmap;
-	static HashMap<String,String> routemap;*/
+	static HashMap<String,String> routemap;
+	static ArrayList <String> agencies = new ArrayList<String>();
+	static ArrayList <String> routes = new ArrayList<String>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
+		
+		//create the list of agencies
+		new RetrieveAgencies().execute(" ");
 		
 		// gets the activity's default ActionBar
 		ActionBar actionBar = getActionBar();
@@ -162,15 +173,71 @@ public class MainActivity extends Activity {
     		}
     		break;
     	case R.id.item_new:
-    		makeToast("Adding...");
-    		final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    		//makeToast("Adding...");
+    		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+    		builder.setTitle("pick your transit agency:");
+    		//builder.setIcon(R.drawable.snowflake);
+    		//ArrayList<String> items = getAgencies();
+    		new RetrieveAgencies().execute(" ");
+    		final String[] items = (String []) agencies.toArray(new String[0]);
+    		
+    		builder.setSingleChoiceItems(items, 0, new DialogInterface.OnClickListener() {
+    		//builder.setItems(items, new DialogInterface.OnClickListener() {
+        		public void onClick(DialogInterface dialog, int item) {
+        	        //Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
+        	        agency = items[item];
+        	        new RetrieveRoutes().execute(" ");
+        	    }
+
+        	});
+    		
+    		builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    // User clicked OK, so save the mSelectedItems results somewhere
+                    // or return them to the component that opened the dialog
+                	AlertDialog.Builder routebuilder = new AlertDialog.Builder(MainActivity.this);
+            		routebuilder.setTitle("pick your bus route:");
+                	/*AsyncTask<String, Void, String[]> temp = new RetrieveRoutes().execute(" ");
+                	try {
+						temp.get(1000, TimeUnit.MILLISECONDS);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}*/
+                	final String[] routelist = (String []) routes.toArray(new String[0]);
+                	//builder.setSingleChoiceItems(routelist, 0, new DialogInterface.OnClickListener() {
+                	routebuilder.setItems(routelist, new DialogInterface.OnClickListener() {
+                		public void onClick(DialogInterface dialog, int item) {
+                	        Toast.makeText(getApplicationContext(), routelist[item], Toast.LENGTH_SHORT).show();
+                	        route = routelist[item];
+                	    }
+                	});
+                	AlertDialog routealert = routebuilder.create();
+                	routealert.show();
+                }
+            });
+            builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    
+                }
+            });
+    		AlertDialog alert = builder.create();
+        	alert.show();
+    		
+    		
+    		
+    		/*final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     		LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
     		FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
     		linearLayout.addView(temp);
     		
     		TextView stops = (TextView) temp.findViewById(R.id.bus_stop);
-    		stops.setText("test");
+    		stops.setText("test");*/
+        	
     		break;
+    		
     	}
     	
   		return true;
@@ -209,9 +276,48 @@ public class MainActivity extends Activity {
 		}
 		return "None";
 	}*/
+    class RetrieveAgencies extends AsyncTask<String, Void, String[]> {
+		protected String[] doInBackground(String... urls){
+			//ArrayList<String> agencies = new ArrayList<String>();
+			URL url;
+			URLConnection connection;
+			DocumentBuilder dBuilder;
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			agencymap = new HashMap<String,String>();
+			try {
+				url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList");
+				connection = url.openConnection();
+				dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(connection.getInputStream());
+				
+				NodeList nList = doc.getElementsByTagName("agency");
+				
+				for (int i=0; i<nList.getLength(); i++){
+					Node nNode = nList.item(i);
+					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+						Element eElement = (Element) nNode;
+						agencies.add(eElement.getAttribute("title"));
+						agencymap.put(eElement.getAttribute("title"),eElement.getAttribute("tag"));
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			//return agencies;
+			return null;//(String[]) agencies.toArray(new String[0]);
+		}
+
+		protected void onPostExecute(String[] result) {
+			//Log.v("Bus Prediction",result);
+			//TextView estimation = (TextView) findViewById(R.id.time);
+			//estimation.setText(result);
+		}
+
+	}
 	
-	/*private static ArrayList<String> getAgencies() {
-		ArrayList<String> agencies = new ArrayList<String>();
+	//private static ArrayList<String> getAgencies() {
+    /*private static String[] getAgencies() {
+		//ArrayList<String> agencies = new ArrayList<String>();
 		URL url;
 		URLConnection connection;
 		DocumentBuilder dBuilder;
@@ -236,10 +342,51 @@ public class MainActivity extends Activity {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return agencies;
-	}
+		//return agencies;
+		return (String[]) agencies.toArray(new String[0]);
+	}*/
 	
-	public static ArrayList<String> getRoutes(String agency) {
+    class RetrieveRoutes extends AsyncTask<String, Void, String[]> {
+		protected String[] doInBackground(String... urls){
+			//ArrayList<String> routes = new ArrayList<String>();
+			URL url;
+			URLConnection connection;
+			DocumentBuilder dBuilder;
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			try {
+				url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a="+agency);
+				connection = url.openConnection();
+				dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(connection.getInputStream());
+				
+				NodeList nList = doc.getElementsByTagName("route");
+				
+				for (int i=0; i<nList.getLength(); i++){
+					Node nNode = nList.item(i);
+					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+						Element eElement = (Element) nNode;
+						//System.out.println("Route Name: " + eElement.getAttribute("title"));
+						//System.out.println("Route Tag: " + eElement.getAttribute("tag"));
+						//System.out.println("--------------------------");
+						routes.add(eElement.getAttribute("title"));
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			//return routes;
+			return null;
+		}
+
+		protected void onPostExecute(String[] result) {
+			//Log.v("Bus Prediction",result);
+			//TextView estimation = (TextView) findViewById(R.id.time);
+			//estimation.setText(result);
+		}
+
+	}
+    
+	/*public static ArrayList<String> getRoutes(String agency) {
 		ArrayList<String> routes = new ArrayList<String>();
 		URL url;
 		URLConnection connection;
