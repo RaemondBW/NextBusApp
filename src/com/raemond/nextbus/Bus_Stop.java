@@ -29,7 +29,12 @@ public class Bus_Stop {
 		//Does nothing
 	}
 	
-	Bus_Stop(String m_agency,String formalAgency, String m_route, String formalStop, String m_stop, FrameLayout m_currentFrame) {
+	Bus_Stop(String m_agency,String formalAgency, String m_route, String m_stop, String formalStop, FrameLayout m_currentFrame) {
+		//Log.v("formal Agency", formalAgency);
+		Log.v("agency", m_agency);
+		Log.v("stop", m_stop);
+		Log.v("route", m_route);
+		Log.v("formal stop", formalStop);
 		agencyRoute = formalAgency + ": Route " + m_route;
 		stop = "Stop: " + formalStop;
 		url = "http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=" + m_agency + "&stopId=" + m_stop + "&routeTag=" + m_route;
