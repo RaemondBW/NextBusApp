@@ -80,21 +80,6 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		
-		//Setup my stops.db so that we can query individual stops by different criterions.
-	    /*myDbHelper = new DataBaseHelper(this);
-	    try {
-	    	myDbHelper.createDataBase();
-		} catch (IOException ioe) {
-			throw new Error("Unable to create database");
-		}
-		try {
-			myDbHelper.openDataBase();
-		}catch(SQLException sqle){
-			throw sqle;
-		}
-		
-		stopDatabase = myDbHelper.getReadableDatabase();*/
-		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
 		
@@ -109,13 +94,6 @@ public class MainActivity extends Activity {
 		String direction = "52_53_0";
 		String stop = "57955";
 		
-		/*transitAgency.setText(agency + ": Route " + route);
-		stops.setText("Stop: Hearst Av & Le Roy Av");
-		String url = new String();
-		
-		url = "http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=" + agency + "&stopId=" + stop + "&routeTag=" + route;
-		Log.v("url",url);
-		new RetrievePrediction().execute(url);*/
 		final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
 		FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
@@ -124,16 +102,6 @@ public class MainActivity extends Activity {
 		Bus_Stop new_stop = new Bus_Stop(agency,"AC Transit", route, stop, "Hearst Av & Le Roy Av", temp);
 		stops.add(new_stop);
 		
-		/*TextView stops = (TextView) temp.findViewById(R.id.bus_stop);
-		stops.setText("Stop: Hearst Av & Le Roy Av");*/
-		//estimation.setText(prediction/*getPrediction(agency,route,stop)*/);
-		
-		
-		/*setContentView(R.layout.activity_main);
-		agencyspinner = (Spinner)findViewById(R.id.agencySpinner);
-		ArrayAdapter<String> agencyArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,agencies);//getAgencies());
-		agencyspinner.setAdapter(agencyArrayAdapter);
-		agencyspinner.setOnItemSelectedListener(new agencylistener());*/
 	}
 		
 	class RetrievePrediction extends AsyncTask<String, Void, String> {
@@ -220,11 +188,7 @@ public class MainActivity extends Activity {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-    		//Cursor c = stopDatabase.rawQuery("SELECT DISTINCT agency_name FROM stop", null);
     		
-    		//agencies = cursorToArray(c);
-    		
-    		//final Dialog dialog = new Dialog((Context) this);
     		dialog = new Dialog((Context) this);
 			dialog.setContentView(R.layout.activity_main);
 			dialog.setTitle("pick your stop:");
@@ -252,36 +216,6 @@ public class MainActivity extends Activity {
 			});
  
 			dialog.show();
-			
-			
-			/*routespinner = (Spinner) dialog.findViewById(R.id.routeSpinner);
-			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,routes);//getRoutes(agency));
-			routespinner.setAdapter(routeArrayAdapter);
-			routespinner.setOnItemSelectedListener(new routelistener());
-    		
-    		
-			directionspinner = (Spinner) dialog.findViewById(R.id.directionSpinner);
-			ArrayAdapter<String> directionArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,directions);//getRoutes(agency));
-			directionspinner.setAdapter(directionArrayAdapter);
-			directionspinner.setOnItemSelectedListener(new directionlistener());
-			
-			
-			stopspinner = (Spinner) dialog.findViewById(R.id.stopSpinner);
-			ArrayAdapter<String> stopArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,stopList);
-			stopspinner.setAdapter(stopArrayAdapter);
-			stopspinner.setOnItemSelectedListener(new stoplistener());*/
-			
-			
-			/*final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
-			FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
-			linearLayout.addView(temp);
-			
-			Bus_Stop new_stop = new Bus_Stop(agency,"AC Transit", route, "Hearst Av & Le Roy Av", stop, temp);
-			stops.add(new_stop);*/
         	
     		break;
     		
@@ -424,41 +358,6 @@ public class MainActivity extends Activity {
 
 	}
 	
-	/*public static ArrayList<String> getDirection(String agency, String route) {//changed type from bool to arraylist
-		ArrayList<String> directions = new ArrayList<String>();
-		URL url;
-		URLConnection connection;
-		DocumentBuilder dBuilder;
-		//boolean useForUI = false;
-		directionmap = new HashMap<String,String>();
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		try {
-			url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agency+"&r="+route);
-			connection = url.openConnection();
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(connection.getInputStream());
-			
-			NodeList nList = doc.getElementsByTagName("direction");
-			
-			for (int i=0; i<nList.getLength(); i++){
-				Node nNode = nList.item(i);
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) nNode;
-					if (!"".equals(eElement.getAttribute("title")) && eElement.getAttribute("useForUI").equals("true")){
-						//useForUI = true;
-						directionmap.put(eElement.getAttribute("title"), eElement.getAttribute("tag"));
-						directions.add(eElement.getAttribute("title"));
-					}
-				}
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		//return useForUI;
-		return directions;
-	}*/
-	
 	
 	class RetrieveStops extends AsyncTask<String, Void, String[]> {
 		protected String[] doInBackground(String... urls){
@@ -531,19 +430,13 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View arg1, int pos,
 				long id) {
-			//routespinner = (Spinner) findViewById(R.id.routeSpinner);
-			/*routemap.clear();
-			directionmap.clear();
-			stopmap.clear();*/
     		routes.clear();
     		directions.clear();
     		stopList.clear();
     		route = "";
     		direction = "";
     		stop = "";
-			agency = parent.getItemAtPosition(pos).toString();//agencymap.get(parent.getItemAtPosition(pos).toString());
-			/*Cursor c = stopDatabase.rawQuery("SELECT DISTINCT route_name FROM stop WHERE agency_name = '"+agency+"'", null);
-			routes = cursorToArray(c);*/
+			agency = parent.getItemAtPosition(pos).toString();
 			
 			AsyncTask<String, Void, String[]> task = new RetrieveRoutes().execute(" ");
 			try {
@@ -554,7 +447,7 @@ public class MainActivity extends Activity {
 			}
 			routespinner = (Spinner) dialog.findViewById(R.id.routeSpinner);
 			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,routes);//getRoutes(agency));
+					android.R.layout.simple_expandable_list_item_1,routes);
 			routespinner.setAdapter(routeArrayAdapter);
 			routespinner.setOnItemSelectedListener(new routelistener());
 		}
@@ -569,8 +462,6 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View arg1, int pos,
 				long id) {
-			/*directionmap.clear();
-			stopmap.clear();*/
     		directions.clear();
     		stopList.clear();
     		direction = "";
@@ -600,10 +491,9 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View arg1, int pos,
 				long id) {
-			//stopmap.clear();
     		stopList.clear();
     		stop = "";
-			direction = parent.getItemAtPosition(pos).toString();//directionmap.get(parent.getItemAtPosition(pos).toString());
+			direction = parent.getItemAtPosition(pos).toString();
 			AsyncTask<String, Void, String[]> task = new RetrieveStops().execute(" ");
 			try {
 				task.get(1000, TimeUnit.MILLISECONDS);
@@ -629,15 +519,7 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View arg1, int pos,
 				long id) {
-			//stopspinner = (Spinner)findViewById(R.id.stopSpinner);
-			//stop = directionmap.get(parent.getItemAtPosition(pos).toString());
 			stop = parent.getItemAtPosition(pos).toString();
-			
-			/*ArrayAdapter<String> stopArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,getStops(agency,route,direction));
-			stopspinner.setAdapter(stopArrayAdapter);*/
-			//stopspinner.setOnItemSelectedListener(new directionlistener());
-			
 		}
 
 		@Override
