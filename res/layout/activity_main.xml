@@ -30,7 +30,8 @@
             <Spinner
                 android:id="@+id/agencySpinner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:spinnerMode="dialog" />
 
             <TextView
                 android:id="@+id/TextView01"
@@ -41,7 +42,8 @@
             <Spinner
                 android:id="@+id/routeSpinner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:spinnerMode="dialog" />
 
             <TextView
                 android:id="@+id/TextView02"
@@ -52,7 +54,8 @@
             <Spinner
                 android:id="@+id/directionSpinner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:spinnerMode="dialog" />
 
             <TextView
                 android:id="@+id/TextView03"
@@ -63,14 +66,16 @@
             <Spinner
                 android:id="@+id/stopSpinner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:spinnerMode="dialog" />
         </LinearLayout>
     </ScrollView>
 
     <Button
         android:id="@+id/addBusStop"
-        android:layout_width="289dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:text="@string/get" />
 
 </LinearLayout>
