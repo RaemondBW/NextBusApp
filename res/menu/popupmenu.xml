@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <group android:id="@+id/group_popupmenu">
+      <item android:id="@+id/remove"
+          android:title="remove stop"/>
+      <item android:id="@+id/navigate"
+          android:title="navigate to stop"/>
+      <!--<item android:id="@+id/reminder"
+          android:title="set bus reminder"/>-->
+  </group>
+</menu>

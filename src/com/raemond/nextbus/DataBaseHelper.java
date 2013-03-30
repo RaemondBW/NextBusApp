@@ -17,7 +17,24 @@ public class DataBaseHelper extends SQLiteOpenHelper{
     //The Android's default system path of your application database.
     private static String DB_PATH = "/data/data/com.raemond.nextbus/databases/";
  
-    private static String DB_NAME = "stops.db";
+    //private static String DB_NAME = "stops.db";
+	private static String DB_NAME = "myStops.db";
+	
+	private static String DB_TABLE_NAME = "saved_stops";
+	private static String DB_ID = "_ID";
+	private static String DB_Agency_Tag = "agency_tag";
+	private static String DB_Agency_Formal = "agency_formal";
+	private static String DB_Route = "route";
+	private static String DB_Stop_ID = "stop_id";
+	private static String DB_Stop_Formal = "stop_formal";
+	
+	private static final String DICTIONARY_TABLE_CREATE ="CREATE TABLE " + DB_TABLE_NAME + " (" +
+        DB_ID + " INTEGER PRIMARY KEY, " +
+        DB_Agency_Tag + " TEXT, " +
+        DB_Agency_Formal + " TEXT, " +
+        DB_Route + " TEXT, " +
+        DB_Stop_ID + " TEXT, " +
+        DB_Stop_Formal + " TEXT);";
  
     private SQLiteDatabase myDataBase; 
  
@@ -29,7 +46,6 @@ public class DataBaseHelper extends SQLiteOpenHelper{
      * @param context
      */
     public DataBaseHelper(Context context) {
- 
     	super(context, DB_NAME, null, 1);
         this.myContext = context;
     }	
@@ -37,7 +53,7 @@ public class DataBaseHelper extends SQLiteOpenHelper{
   /**
      * Creates a empty database on the system and rewrites it with your own database.
      * */
-    public void createDataBase() throws IOException{
+    /*public void createDataBase() throws IOException{
  
     	boolean dbExist = checkDataBase();
  
@@ -60,13 +76,13 @@ public class DataBaseHelper extends SQLiteOpenHelper{
         	}
     	}
  
-    }
+    }*/
  
     /**
      * Check if the database already exist to avoid re-copying the file each time you open the application.
      * @return true if it exists, false if it doesn't
      */
-    private boolean checkDataBase(){
+    /*private boolean checkDataBase(){
  
     	SQLiteDatabase checkDB = null;
  
@@ -87,14 +103,14 @@ public class DataBaseHelper extends SQLiteOpenHelper{
     	}
  
     	return checkDB != null ? true : false;
-    }
+    }*/
  
     /**
      * Copies your database from your local assets-folder to the just created empty database in the
      * system folder, from where it can be accessed and handled.
      * This is done by transfering bytestream.
      * */
-    private void copyDataBase() throws IOException{
+    /*private void copyDataBase() throws IOException{
  
     	//Open your local db as the input stream
     	InputStream myInput = myContext.getAssets().open(DB_NAME);
@@ -117,7 +133,7 @@ public class DataBaseHelper extends SQLiteOpenHelper{
     	myOutput.close();
     	myInput.close();
  
-    }
+    }*/
  
     public void openDataBase() throws SQLException{
  
@@ -139,7 +155,7 @@ public class DataBaseHelper extends SQLiteOpenHelper{
  
 	@Override
 	public void onCreate(SQLiteDatabase db) {
- 
+		db.execSQL(DICTIONARY_TABLE_CREATE);
 	}
  
 	@Override

@@ -31,6 +31,7 @@
                 android:id="@+id/agencySpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="0dp"
                 android:spinnerMode="dialog" />
 
             <TextView
@@ -43,6 +44,7 @@
                 android:id="@+id/routeSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="0dp"
                 android:spinnerMode="dialog" />
 
             <TextView
@@ -55,6 +57,7 @@
                 android:id="@+id/directionSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="0dp"
                 android:spinnerMode="dialog" />
 
             <TextView
@@ -67,7 +70,9 @@
                 android:id="@+id/stopSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="0dp"
                 android:spinnerMode="dialog" />
+
         </LinearLayout>
     </ScrollView>
 

@@ -6,6 +6,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -30,11 +32,13 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,6 +51,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -56,14 +61,15 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 	
 	DataBaseHelper myDbHelper;
-	SQLiteDatabase stopDatabase;
+	static SQLiteDatabase stopDatabase;
 	Dialog dialog;
+	RefreshTimer refreshTimer;
 	
 	Spinner agencyspinner;
 	Spinner routespinner;
 	Spinner directionspinner;
 	Spinner stopspinner;
-	ArrayList <Bus_Stop> stops = new ArrayList<Bus_Stop>();
+	static ArrayList <Bus_Stop> stops = new ArrayList<Bus_Stop>();
 	String agency;
 	String route;
 	String direction;
@@ -76,20 +82,52 @@ public class MainActivity extends Activity {
 	static ArrayList <String> routes = new ArrayList<String>();
 	static ArrayList <String> directions = new ArrayList<String>();
 	static ArrayList <String> stopList = new ArrayList<String>();
+	static Typeface robotoCond;// = Typeface.createFromAsset(getAssets(), "Roboto-Condensed.ttf");
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		
+		robotoCond = Typeface.createFromAsset(this.getAssets(), "Roboto-Light.ttf");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
+		
+		/*myDbHelper = new DataBaseHelper(this);
+		stopDatabase = myDbHelper.getWritableDatabase();*/
 		
 		// gets the activity's default ActionBar
 		ActionBar actionBar = getActionBar();
 		actionBar.show();
-		
+
 		//TextView transitAgency = (TextView) findViewById(R.id.TransitAgency_Route);
-		
-		String agency = "actransit";
+
+		boolean firstrun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("firstrun", true);
+		if (firstrun){
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			// Add the buttons
+			builder.setTitle("Welcome!");
+			builder.setMessage("Congratulations on installing nextBus! To start using the application just hit the \"get started\" button and add your first bus stop!");
+			builder.setPositiveButton("get started", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					dialog.dismiss();
+					createNewStopPopup();
+					//final Button button = (Button) findViewById(R.id.item_new);
+					//button.performClick();
+					//MenuItem item = (MenuItem) findViewById(R.id.item_new);
+					//onOptionsItemSelected(item);
+				}
+			});
+			// create alert dialog
+			AlertDialog alertDialog = builder.create();
+			// show it
+			alertDialog.show();
+
+			getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+			.edit()
+			.putBoolean("firstrun", false)
+			.commit();
+		}
+
+		/*String agency = "actransit";
 		String route = "52";
 		String direction = "52_53_0";
 		String stop = "57955";
@@ -100,8 +138,62 @@ public class MainActivity extends Activity {
 		linearLayout.addView(temp);
 		
 		Bus_Stop new_stop = new Bus_Stop(agency,"AC Transit", route, stop, "Hearst Av & Le Roy Av", temp);
-		stops.add(new_stop);
+		stops.add(new_stop);*/
+	}
+	
+	protected void onStart() {
+	  	super.onStart();
+	  	myDbHelper = new DataBaseHelper(this);
+		stopDatabase = myDbHelper.getWritableDatabase();
 		
+	  	if (stops.isEmpty()) {
+	  		Log.v("stops","empty");
+	  		restoreCards();
+	  	} else {
+	  		Log.v("else", "called");
+	  		for (Bus_Stop elem : stops) {
+	  			elem.currentFrame.setVisibility(View.GONE);
+	  			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
+				FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
+				linearLayout.addView(temp);
+	  			elem.reAddFrame(temp);
+	  		}
+	  	}
+	  	for (Bus_Stop stop: stops) {
+			stop.refreshStop();
+		}
+	  	refreshTimer = new RefreshTimer();
+	  	Timer t = new Timer();
+	  	t.schedule(refreshTimer, 30000, 30000);
+	}
+	
+	protected void onPause() {
+		super.onPause();
+		refreshTimer.cancel();
+		for (Bus_Stop stop : stops) {
+			if (!checkDuplicateInDatabase(stop)) {
+				ContentValues cv = new ContentValues();
+			    cv.put("agency_tag", stop.agency);
+			    cv.put("agency_formal", stop.formalAgency);
+			    cv.put("route", stop.route);
+			    cv.put("stop_id", stop.stop);
+			    cv.put("stop_formal", stop.formalStop);
+			    stopDatabase.insert("saved_stops", null, cv);
+			    Log.v("INSERTED INTO", "database");
+			}
+		}
+	}
+	
+	protected void onStop() {
+		super.onStop();
+		stopDatabase.close();
+		myDbHelper.close();
+	}
+	
+	public boolean checkDuplicateInDatabase(Bus_Stop insertAttempt) {
+		//if (insertAttempt.stop)
+		return stopDatabase.rawQuery("SELECT _ID FROM saved_stops WHERE stop_id = " + insertAttempt.stop, null).moveToFirst();
 	}
 		
 	class RetrievePrediction extends AsyncTask<String, Void, String> {
@@ -146,10 +238,60 @@ public class MainActivity extends Activity {
 		Log.v("onCreate","OptionsMenu");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
+       
         return true;
     }
 	
-	private ArrayList<String> cursorToArray(Cursor current) {
+	/*public void onPopupButtonClick(View button) {//REMOVE IF PROBLEMS______________________________________________________________
+        PopupMenu popup = new PopupMenu(this, button);
+        popup.getMenuInflater().inflate(R.menu.popupmenu, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                Toast.makeText(MainActivity.this, "Clicked popup menu item " + item.getTitle(),
+                        Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
+        popup.show();
+    }*/
+	
+	public static void removeCard(Bus_Stop item) {
+		item.currentFrame.setVisibility(View.GONE);
+		int index = stops.indexOf(item);
+		if (index != -1) {
+			stopDatabase.delete("saved_stops", "stop_id" + "=" + item.stop, null);
+			stops.remove(index);
+		}
+	}
+	
+	
+	public void restoreCards() {
+		String[] columns = {"_ID", "agency_tag", "agency_formal", "route", "stop_id", "stop_formal"};
+		Cursor cursor = stopDatabase.query("saved_stops", columns, null, null, null, null, null);
+	    String result = "";
+	    int RowID = cursor.getColumnIndex("_ID");
+	    int agencyTag = cursor.getColumnIndex("agency_tag");
+	    int agencyFormal = cursor.getColumnIndex("agency_formal");
+	    int route = cursor.getColumnIndex("route");
+	    int stopID = cursor.getColumnIndex("stop_id");
+	    int stopFormal = cursor.getColumnIndex("stop_formal");
+
+	    for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+	        //result += cursor.getString(iRow) + ": " + cursor.getString(iName) + " - " + cursor.getDouble(iLat) + " latitude " + cursor.getDouble(iLon) + " longitude\n";
+	        final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
+			FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
+			linearLayout.addView(temp);
+			
+			Bus_Stop new_stop = new Bus_Stop(cursor.getString(agencyTag), cursor.getString(agencyFormal), cursor.getString(route),
+					cursor.getString(stopID), cursor.getString(stopFormal), temp, this);
+			stops.add(new_stop);
+	    }
+	}
+	
+	/*private ArrayList<String> cursorToArray(Cursor current) {
 		ArrayList<String> returnArray = new ArrayList<String>();
 		current.moveToFirst();
 		do {
@@ -159,6 +301,53 @@ public class MainActivity extends Activity {
 		 
 		current.close();
 		return returnArray;
+	}*/
+	
+	public void createNewStopPopup() {
+		agencies.clear();
+		routes.clear();
+		directions.clear();
+		stopList.clear();
+		agency = "";
+		route = "";
+		direction = "";
+		stop = "";
+		//create the list of agencies
+		AsyncTask<String, Void, String[]> task = new RetrieveAgencies().execute(" ");
+		try {
+			task.get(1000, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		dialog = new Dialog((Context) this);
+		dialog.setContentView(R.layout.activity_main);
+		dialog.setTitle("pick your stop:");
+
+		// set the custom dialog components - text, image and button
+		agencyspinner = (Spinner) dialog.findViewById(R.id.agencySpinner);
+		ArrayAdapter<String> agencyArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,agencies);
+		agencyspinner.setAdapter(agencyArrayAdapter);
+		agencyspinner.setOnItemSelectedListener(new agencylistener());
+
+		Button dialogButton = (Button) dialog.findViewById(R.id.addBusStop);
+		// if button is clicked, close the custom dialog
+		dialogButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
+				FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
+				linearLayout.addView(temp);
+				
+				Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, route, stopmap.get(stop), stop, temp, MainActivity.this);//Don't I need to pass the formal route name?
+				stops.add(new_stop);
+				dialog.dismiss();
+			}
+		});
+
+		dialog.show();
 	}
     
     @Override
@@ -172,50 +361,7 @@ public class MainActivity extends Activity {
     		}
     		break;
     	case R.id.item_new:
-    		agencies.clear();
-    		routes.clear();
-    		directions.clear();
-    		stopList.clear();
-    		agency = "";
-    		route = "";
-    		direction = "";
-    		stop = "";
-    		//create the list of agencies
-    		AsyncTask<String, Void, String[]> task = new RetrieveAgencies().execute(" ");
-    		try {
-				task.get(1000, TimeUnit.MILLISECONDS);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    		
-    		dialog = new Dialog((Context) this);
-			dialog.setContentView(R.layout.activity_main);
-			dialog.setTitle("pick your stop:");
- 
-			// set the custom dialog components - text, image and button
-			agencyspinner = (Spinner) dialog.findViewById(R.id.agencySpinner);
-			ArrayAdapter<String> agencyArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,agencies);
-			agencyspinner.setAdapter(agencyArrayAdapter);
-			agencyspinner.setOnItemSelectedListener(new agencylistener());
- 
-			Button dialogButton = (Button) dialog.findViewById(R.id.addBusStop);
-			// if button is clicked, close the custom dialog
-			dialogButton.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-					LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
-					FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
-					linearLayout.addView(temp);
-					
-					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, route, stopmap.get(stop), stop, temp);//Don't I need to pass the formal route name?
-					stops.add(new_stop);
-					dialog.dismiss();
-				}
-			});
- 
-			dialog.show();
+    		createNewStopPopup();
         	
     		break;
     		
@@ -447,7 +593,8 @@ public class MainActivity extends Activity {
 			}
 			routespinner = (Spinner) dialog.findViewById(R.id.routeSpinner);
 			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,routes);
+					//android.R.layout.simple_expandable_list_item_1,routes);
+					android.R.layout.simple_dropdown_item_1line,routes);
 			routespinner.setAdapter(routeArrayAdapter);
 			routespinner.setOnItemSelectedListener(new routelistener());
 		}
@@ -476,7 +623,8 @@ public class MainActivity extends Activity {
 			}
 			directionspinner = (Spinner) dialog.findViewById(R.id.directionSpinner);
 			ArrayAdapter<String> directionArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,directions);
+					//android.R.layout.simple_expandable_list_item_1,directions);
+					android.R.layout.simple_dropdown_item_1line,directions);
 			directionspinner.setAdapter(directionArrayAdapter);
 			directionspinner.setOnItemSelectedListener(new directionlistener());
 		}
@@ -503,7 +651,8 @@ public class MainActivity extends Activity {
 			}
 			stopspinner = (Spinner)dialog.findViewById(R.id.stopSpinner);
 			ArrayAdapter<String> stopArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					android.R.layout.simple_expandable_list_item_1,stopList);
+					//android.R.layout.simple_expandable_list_item_1,stopList);
+					android.R.layout.simple_dropdown_item_1line,stopList);
 			stopspinner.setAdapter(stopArrayAdapter);
 			stopspinner.setOnItemSelectedListener(new stoplistener());
 		}
