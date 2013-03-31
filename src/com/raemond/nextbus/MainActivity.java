@@ -1,20 +1,22 @@
 package com.raemond.nextbus;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,9 +27,9 @@ import com.raemond.nextbus.R;
 import com.raemond.nextbus.Bus_Stop;
 
 
+import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -36,7 +38,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.util.Log;
@@ -51,8 +52,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.TextView;
@@ -242,20 +241,6 @@ public class MainActivity extends Activity {
         return true;
     }
 	
-	/*public void onPopupButtonClick(View button) {//REMOVE IF PROBLEMS______________________________________________________________
-        PopupMenu popup = new PopupMenu(this, button);
-        popup.getMenuInflater().inflate(R.menu.popupmenu, popup.getMenu());
-
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            public boolean onMenuItemClick(MenuItem item) {
-                Toast.makeText(MainActivity.this, "Clicked popup menu item " + item.getTitle(),
-                        Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-
-        popup.show();
-    }*/
 	
 	public static void removeCard(Bus_Stop item) {
 		item.currentFrame.setVisibility(View.GONE);
@@ -336,14 +321,16 @@ public class MainActivity extends Activity {
 		dialogButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
-				FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
-				linearLayout.addView(temp);
-				
-				Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, route, stopmap.get(stop), stop, temp, MainActivity.this);//Don't I need to pass the formal route name?
-				stops.add(new_stop);
-				dialog.dismiss();
+				if (!agency.isEmpty() && !route.isEmpty() && !stop.isEmpty()) {
+					final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+					LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
+					FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
+					linearLayout.addView(temp);
+					
+					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, route, stopmap.get(stop), stop, temp, MainActivity.this);//Don't I need to pass the formal route name?
+					stops.add(new_stop);
+					dialog.dismiss();
+				}
 			}
 		});
 
@@ -378,18 +365,31 @@ public class MainActivity extends Activity {
 	
     class RetrieveAgencies extends AsyncTask<String, Void, String[]> {
 		protected String[] doInBackground(String... urls){
-			//ArrayList<String> agencies = new ArrayList<String>();
-			URL url;
-			URLConnection connection;
-			DocumentBuilder dBuilder;
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			
+			HttpGet url;    
+			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			
+			//URL url;
+			//URLConnection connection;
+			//DocumentBuilder dBuilder;
+			//DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			//agencies.clear();
 			MainActivity.agencymap = new HashMap<String,String>();
 			try {
-				url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList");
-				connection = url.openConnection();
-				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());
+				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList");
+				HttpUriRequest request = url;
+				request.addHeader("Accept-Encoding", "gzip, deflate");
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				HttpResponse connection = client.execute(url);//url.openConnection();
+				InputStream instream = connection.getEntity().getContent();
+				Header contentEncoding = connection.getFirstHeader("Content-Encoding");
+				if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
+					Log.v("Retrieve Agencies","gzipped");
+				    instream = new GZIPInputStream(instream);
+				}
+				Document doc = builder.parse(instream);
+
 				
 				NodeList nList = doc.getElementsByTagName("agency");
 				
@@ -406,6 +406,7 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 			//return agencies;
+			client.close();
 			return null;//(String[]) agencies.toArray(new String[0]);
 		}
 
@@ -421,16 +422,30 @@ public class MainActivity extends Activity {
     class RetrieveRoutes extends AsyncTask<String, Void, String[]> {
 		protected String[] doInBackground(String... urls){
 			//ArrayList<String> routes = new ArrayList<String>();
-			URL url;
+			/*URL url;
 			URLConnection connection;
 			DocumentBuilder dBuilder;
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();*/
+			HttpGet url;    
+			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			//MainActivity.routes.clear();
 			try {
-				url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a="+agencymap.get(agency));
+				/*url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a="+agencymap.get(agency));
 				connection = url.openConnection();
 				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());
+				Document doc = dBuilder.parse(connection.getInputStream());*/
+				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a="+agencymap.get(agency));
+				HttpUriRequest request = url;
+				request.addHeader("Accept-Encoding", "gzip, deflate");
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				HttpResponse connection = client.execute(url);//url.openConnection();
+				InputStream instream = connection.getEntity().getContent();
+				Header contentEncoding = connection.getFirstHeader("Content-Encoding");
+				if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
+				    instream = new GZIPInputStream(instream);
+				}
+				Document doc = builder.parse(instream);
 				
 				NodeList nList = doc.getElementsByTagName("route");
 				
@@ -446,6 +461,7 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 			//return routes;
+			client.close();
 			return null;
 		}
 
@@ -461,18 +477,32 @@ public class MainActivity extends Activity {
     class RetrieveDirections extends AsyncTask<String, Void, String[]> {
 		protected String[] doInBackground(String... urls){
 			//ArrayList<String> directions = new ArrayList<String>();
-			URL url;
+			HttpGet url;    
+			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			/*URL url;
 			URLConnection connection;
 			DocumentBuilder dBuilder;
-			//boolean useForUI = false;
+			//boolean useForUI = false;*/
 			//directions.clear();
 			MainActivity.directionmap = new HashMap<String,String>();
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			//DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			try {
-				url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
+				/*url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
 				connection = url.openConnection();
 				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());
+				Document doc = dBuilder.parse(connection.getInputStream());*/
+				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
+				HttpUriRequest request = url;
+				request.addHeader("Accept-Encoding", "gzip, deflate");
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				HttpResponse connection = client.execute(url);//url.openConnection();
+				InputStream instream = connection.getEntity().getContent();
+				Header contentEncoding = connection.getFirstHeader("Content-Encoding");
+				if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
+				    instream = new GZIPInputStream(instream);
+				}
+				Document doc = builder.parse(instream);
 				
 				NodeList nList = doc.getElementsByTagName("direction");
 				
@@ -493,6 +523,7 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 			//return directions;
+			client.close();
 			return null;
 		}
 
@@ -510,18 +541,33 @@ public class MainActivity extends Activity {
 			HashMap<String,String> m_stops = new HashMap<String,String>();//tag and stop Name
 			HashMap<String,String> ids = new HashMap<String,String>();//tag and stop id
 			//ArrayList<String> returnStops = new ArrayList<String>();
-			URL url;
+			/*URL url;
 			URLConnection connection;
 			DocumentBuilder dBuilder;
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();*/
+			HttpGet url;    
+			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			
 			//Log.v("Direction",direction);
 			MainActivity.stopmap = new HashMap<String, String>();
 			//stopList.clear();
 			try {
-				url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
+				/*url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
 				connection = url.openConnection();
 				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());
+				Document doc = dBuilder.parse(connection.getInputStream());*/
+				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
+				HttpUriRequest request = url;
+				request.addHeader("Accept-Encoding", "gzip, deflate");
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				HttpResponse connection = client.execute(url);//url.openConnection();
+				InputStream instream = connection.getEntity().getContent();
+				Header contentEncoding = connection.getFirstHeader("Content-Encoding");
+				if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
+				    instream = new GZIPInputStream(instream);
+				}
+				Document doc = builder.parse(instream);
 				
 				NodeList nList = doc.getElementsByTagName("stop");
 				
@@ -561,6 +607,7 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 			//return returnStops;
+			client.close();
 			return null;
 		}
 
