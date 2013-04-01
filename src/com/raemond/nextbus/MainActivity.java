@@ -16,7 +16,6 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -81,7 +80,8 @@ public class MainActivity extends Activity {
 	static ArrayList <String> routes = new ArrayList<String>();
 	static ArrayList <String> directions = new ArrayList<String>();
 	static ArrayList <String> stopList = new ArrayList<String>();
-	static Typeface robotoCond;// = Typeface.createFromAsset(getAssets(), "Roboto-Condensed.ttf");
+	static Typeface robotoCond;
+	Document doc;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -89,14 +89,9 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
 		
-		/*myDbHelper = new DataBaseHelper(this);
-		stopDatabase = myDbHelper.getWritableDatabase();*/
-		
 		// gets the activity's default ActionBar
 		ActionBar actionBar = getActionBar();
 		actionBar.show();
-
-		//TextView transitAgency = (TextView) findViewById(R.id.TransitAgency_Route);
 
 		boolean firstrun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("firstrun", true);
 		if (firstrun){
@@ -109,10 +104,7 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int id) {
 					dialog.dismiss();
 					createNewStopPopup();
-					//final Button button = (Button) findViewById(R.id.item_new);
-					//button.performClick();
-					//MenuItem item = (MenuItem) findViewById(R.id.item_new);
-					//onOptionsItemSelected(item);
+
 				}
 			});
 			// create alert dialog
@@ -125,19 +117,6 @@ public class MainActivity extends Activity {
 			.putBoolean("firstrun", false)
 			.commit();
 		}
-
-		/*String agency = "actransit";
-		String route = "52";
-		String direction = "52_53_0";
-		String stop = "57955";
-		
-		final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
-		FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
-		linearLayout.addView(temp);
-		
-		Bus_Stop new_stop = new Bus_Stop(agency,"AC Transit", route, stop, "Hearst Av & Le Roy Av", temp);
-		stops.add(new_stop);*/
 	}
 	
 	protected void onStart() {
@@ -209,12 +188,10 @@ public class MainActivity extends Activity {
 				Document doc = dBuilder.parse(connection.getInputStream());
 				
 				NodeList nList = doc.getElementsByTagName("prediction");
-				//System.out.println("Prediction for " + agency + " " + route + " " + stop);
 				for (int i=0; i<nList.getLength(); i++){
 					Node nNode = nList.item(i);
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
-						//Log.v("Bus Arrival Prediction", eElement.getAttribute("minutes") + " minutes");
 						return eElement.getAttribute("minutes");
 					}
 				}
@@ -255,8 +232,6 @@ public class MainActivity extends Activity {
 	public void restoreCards() {
 		String[] columns = {"_ID", "agency_tag", "agency_formal", "route", "stop_id", "stop_formal"};
 		Cursor cursor = stopDatabase.query("saved_stops", columns, null, null, null, null, null);
-	    String result = "";
-	    int RowID = cursor.getColumnIndex("_ID");
 	    int agencyTag = cursor.getColumnIndex("agency_tag");
 	    int agencyFormal = cursor.getColumnIndex("agency_formal");
 	    int route = cursor.getColumnIndex("route");
@@ -264,7 +239,6 @@ public class MainActivity extends Activity {
 	    int stopFormal = cursor.getColumnIndex("stop_formal");
 
 	    for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-	        //result += cursor.getString(iRow) + ": " + cursor.getString(iName) + " - " + cursor.getDouble(iLat) + " latitude " + cursor.getDouble(iLon) + " longitude\n";
 	        final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
 			FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
@@ -276,17 +250,6 @@ public class MainActivity extends Activity {
 	    }
 	}
 	
-	/*private ArrayList<String> cursorToArray(Cursor current) {
-		ArrayList<String> returnArray = new ArrayList<String>();
-		current.moveToFirst();
-		do {
-			returnArray.add(current.getString(0));
-			Log.v("item",current.getString(0));
-		} while (current.moveToNext());
-		 
-		current.close();
-		return returnArray;
-	}*/
 	
 	public void createNewStopPopup() {
 		agencies.clear();
@@ -302,7 +265,6 @@ public class MainActivity extends Activity {
 		try {
 			task.get(1000, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -327,7 +289,7 @@ public class MainActivity extends Activity {
 					FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
 					linearLayout.addView(temp);
 					
-					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, route, stopmap.get(stop), stop, temp, MainActivity.this);//Don't I need to pass the formal route name?
+					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, route, stopmap.get(stop), stop, temp, MainActivity.this);
 					stops.add(new_stop);
 					dialog.dismiss();
 				}
@@ -349,16 +311,12 @@ public class MainActivity extends Activity {
     		break;
     	case R.id.item_new:
     		createNewStopPopup();
-        	
     		break;
-    		
     	}
-    	
   		return true;
   	}
     
     public void makeToast(String message) {
-    	// with jam obviously
     	Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 	
@@ -370,11 +328,6 @@ public class MainActivity extends Activity {
 			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			
-			//URL url;
-			//URLConnection connection;
-			//DocumentBuilder dBuilder;
-			//DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			//agencies.clear();
 			MainActivity.agencymap = new HashMap<String,String>();
 			try {
 				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=agencyList");
@@ -405,15 +358,12 @@ public class MainActivity extends Activity {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			//return agencies;
 			client.close();
-			return null;//(String[]) agencies.toArray(new String[0]);
+			return null;
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Log.v("Bus Prediction",result);
-			//TextView estimation = (TextView) findViewById(R.id.time);
-			//estimation.setText(result);
+			//Do nothing
 		}
 
 	}
@@ -421,21 +371,15 @@ public class MainActivity extends Activity {
 	
     class RetrieveRoutes extends AsyncTask<String, Void, String[]> {
 		protected String[] doInBackground(String... urls){
-			//ArrayList<String> routes = new ArrayList<String>();
-			/*URL url;
-			URLConnection connection;
-			DocumentBuilder dBuilder;
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();*/
+			
 			HttpGet url;    
 			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			//MainActivity.routes.clear();
+
 			try {
-				/*url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a="+agencymap.get(agency));
-				connection = url.openConnection();
-				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());*/
+				
 				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a="+agencymap.get(agency));
+
 				HttpUriRequest request = url;
 				request.addHeader("Accept-Encoding", "gzip, deflate");
 				DocumentBuilder builder = factory.newDocumentBuilder();
@@ -466,9 +410,7 @@ public class MainActivity extends Activity {
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Log.v("Bus Prediction",result);
-			//TextView estimation = (TextView) findViewById(R.id.time);
-			//estimation.setText(result);
+			//Do nothing
 		}
 
 	}
@@ -476,22 +418,15 @@ public class MainActivity extends Activity {
     
     class RetrieveDirections extends AsyncTask<String, Void, String[]> {
 		protected String[] doInBackground(String... urls){
-			//ArrayList<String> directions = new ArrayList<String>();
+
 			HttpGet url;    
 			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			/*URL url;
-			URLConnection connection;
-			DocumentBuilder dBuilder;
-			//boolean useForUI = false;*/
-			//directions.clear();
+			
 			MainActivity.directionmap = new HashMap<String,String>();
-			//DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+
 			try {
-				/*url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
-				connection = url.openConnection();
-				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());*/
+				
 				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
 				HttpUriRequest request = url;
 				request.addHeader("Accept-Encoding", "gzip, deflate");
@@ -502,7 +437,8 @@ public class MainActivity extends Activity {
 				if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
 				    instream = new GZIPInputStream(instream);
 				}
-				Document doc = builder.parse(instream);
+
+				doc = builder.parse(instream);
 				
 				NodeList nList = doc.getElementsByTagName("direction");
 				
@@ -511,7 +447,7 @@ public class MainActivity extends Activity {
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
 						if (!"".equals(eElement.getAttribute("title")) && eElement.getAttribute("useForUI").equals("true")){
-							//useForUI = true;
+
 							Log.v("Direction", eElement.getAttribute("title"));
 							MainActivity.directionmap.put(eElement.getAttribute("title"), eElement.getAttribute("tag"));
 							directions.add(eElement.getAttribute("title"));
@@ -522,15 +458,13 @@ public class MainActivity extends Activity {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			//return directions;
+
 			client.close();
 			return null;
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Log.v("Bus Prediction",result);
-			//TextView estimation = (TextView) findViewById(R.id.time);
-			//estimation.setText(result);
+			//Do nothing
 		}
 
 	}
@@ -540,34 +474,9 @@ public class MainActivity extends Activity {
 		protected String[] doInBackground(String... urls){
 			HashMap<String,String> m_stops = new HashMap<String,String>();//tag and stop Name
 			HashMap<String,String> ids = new HashMap<String,String>();//tag and stop id
-			//ArrayList<String> returnStops = new ArrayList<String>();
-			/*URL url;
-			URLConnection connection;
-			DocumentBuilder dBuilder;
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();*/
-			HttpGet url;    
-			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			
-			//Log.v("Direction",direction);
 			MainActivity.stopmap = new HashMap<String, String>();
-			//stopList.clear();
+
 			try {
-				/*url = new URL("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
-				connection = url.openConnection();
-				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());*/
-				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
-				HttpUriRequest request = url;
-				request.addHeader("Accept-Encoding", "gzip, deflate");
-				DocumentBuilder builder = factory.newDocumentBuilder();
-				HttpResponse connection = client.execute(url);//url.openConnection();
-				InputStream instream = connection.getEntity().getContent();
-				Header contentEncoding = connection.getFirstHeader("Content-Encoding");
-				if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
-				    instream = new GZIPInputStream(instream);
-				}
-				Document doc = builder.parse(instream);
 				
 				NodeList nList = doc.getElementsByTagName("stop");
 				
@@ -606,15 +515,12 @@ public class MainActivity extends Activity {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			//return returnStops;
-			client.close();
+
 			return null;
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Log.v("Bus Prediction",result);
-			//TextView estimation = (TextView) findViewById(R.id.time);
-			//estimation.setText(result);
+			//Do nothing
 		}
 
 	}
@@ -640,7 +546,6 @@ public class MainActivity extends Activity {
 			}
 			routespinner = (Spinner) dialog.findViewById(R.id.routeSpinner);
 			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					//android.R.layout.simple_expandable_list_item_1,routes);
 					android.R.layout.simple_dropdown_item_1line,routes);
 			routespinner.setAdapter(routeArrayAdapter);
 			routespinner.setOnItemSelectedListener(new routelistener());
@@ -663,7 +568,7 @@ public class MainActivity extends Activity {
 			route = parent.getItemAtPosition(pos).toString();
 			AsyncTask<String, Void, String[]> task = new RetrieveDirections().execute(" ");
 			try {
-				task.get(1000, TimeUnit.MILLISECONDS);
+				task.get(2000, TimeUnit.MILLISECONDS);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -678,7 +583,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void onNothingSelected(AdapterView<?> arg0) {
-			// TODO Auto-generated method stub
+			//Do nothing
 		}
 	}
 	
@@ -691,14 +596,12 @@ public class MainActivity extends Activity {
 			direction = parent.getItemAtPosition(pos).toString();
 			AsyncTask<String, Void, String[]> task = new RetrieveStops().execute(" ");
 			try {
-				task.get(1000, TimeUnit.MILLISECONDS);
+				task.get(2000, TimeUnit.MILLISECONDS);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			stopspinner = (Spinner)dialog.findViewById(R.id.stopSpinner);
 			ArrayAdapter<String> stopArrayAdapter = new ArrayAdapter<String>(MainActivity.this,
-					//android.R.layout.simple_expandable_list_item_1,stopList);
 					android.R.layout.simple_dropdown_item_1line,stopList);
 			stopspinner.setAdapter(stopArrayAdapter);
 			stopspinner.setOnItemSelectedListener(new stoplistener());
@@ -706,7 +609,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void onNothingSelected(AdapterView<?> arg0) {
-			// TODO Auto-generated method stub
+			//Do nothing
 
 		}
 	}
@@ -720,7 +623,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void onNothingSelected(AdapterView<?> arg0) {
-			// TODO Auto-generated method stub
+			//Do nothing
 
 		}
 	}

@@ -12,8 +12,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.raemond.nextbus.MainActivity.RetrievePrediction;
-
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -25,7 +23,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class Bus_Stop {
 	public String agencyRoute = new String();
