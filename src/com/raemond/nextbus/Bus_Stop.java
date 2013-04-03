@@ -88,9 +88,6 @@ public class Bus_Stop {
                     		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                     		context.startActivity(intent);
                     		break;
-                    	/*case R.id.reminder:
-                    		Toast.makeText(context, "Set Reminder", Toast.LENGTH_SHORT).show();
-                    		break;*/
                     	}
                         return true;
                     }

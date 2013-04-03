@@ -130,6 +130,32 @@ public class MainActivity extends Activity {
 	}
 	
 	
+	@Override
+  	public boolean onOptionsItemSelected(MenuItem item){
+    	switch(item.getItemId()) {
+    	case R.id.item_refresh:
+    		makeToast("Refreshing...");
+    		for (Bus_Stop stop: stops) {
+    			stop.refreshStop();
+    		}
+    		break;
+    	case R.id.item_new:
+    		new addNewStopPopUp(this,linearLayout);
+    		break;
+    	}
+  		return true;
+  	}
+	
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+       
+        return true;
+    }
+	
+	
 	public boolean checkDuplicateInDatabase(Bus_Stop insertAttempt) {
 		return stopDatabase.rawQuery("SELECT _ID FROM saved_stops WHERE stop_id = " + insertAttempt.stop, null).moveToFirst();
 	}
@@ -168,15 +194,6 @@ public class MainActivity extends Activity {
 	}
 	
 	
-	@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main, menu);
-       
-        return true;
-    }
-	
-	
 	public static void removeCard(Bus_Stop item) {
 		item.currentFrame.setVisibility(View.GONE);
 		int index = stops.indexOf(item);
@@ -209,23 +226,6 @@ public class MainActivity extends Activity {
 	    }
 	}
 	
-    
-    @Override
-  	public boolean onOptionsItemSelected(MenuItem item){
-    	switch(item.getItemId()) {
-    	case R.id.item_refresh:
-    		makeToast("Refreshing...");
-    		for (Bus_Stop stop: stops) {
-    			stop.refreshStop();
-    		}
-    		break;
-    	case R.id.item_new:
-    		new addNewStopPopUp(this,linearLayout);
-    		break;
-    	}
-  		return true;
-  	}
-    
     
     public void makeToast(String message) {
     	Toast.makeText(this, message, Toast.LENGTH_SHORT).show();

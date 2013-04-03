@@ -57,16 +57,9 @@ public class addNewStopPopUp {
 	Context context;
 	
 	public addNewStopPopUp(final Context m_context, LinearLayout m_linearLayout) {
-		agencies.clear();
-		routes.clear();
-		directions.clear();
-		stopList.clear();
-		agency = "";
-		route = "";
-		direction = "";
-		stop = "";
 		context = m_context;
 		linearLayout = m_linearLayout;
+		
 		//create the list of agencies
 		AsyncTask<String, Void, String[]> task = new RetrieveAgencies().execute(" ");
 		try {
@@ -123,7 +116,6 @@ public class addNewStopPopUp {
 				    instream = new GZIPInputStream(instream);
 				}
 				Document doc = builder.parse(instream);
-
 				
 				NodeList nList = doc.getElementsByTagName("agency");
 				

@@ -19,7 +19,6 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 	private static String DB_Stop_Formal = "stop_formal";
 	private static final int DB_Version = 1;
 	private SQLiteDatabase myDataBase; 
-	private final Context myContext;
 
 	
 	private static final String DICTIONARY_TABLE_CREATE ="CREATE TABLE " + DB_TABLE_NAME + " (" +
@@ -34,7 +33,6 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 	
 	public DataBaseHelper(Context context) {
 		super(context, DB_NAME, null, DB_Version);
-		this.myContext = context;
 	}	
 
 	
@@ -47,12 +45,9 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 	
 	@Override
 	public synchronized void close() {
-
 		if(myDataBase != null)
 			myDataBase.close();
-
 		super.close();
-
 	}
 
 	
