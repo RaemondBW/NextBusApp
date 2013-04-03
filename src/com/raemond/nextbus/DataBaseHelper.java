@@ -7,12 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DataBaseHelper extends SQLiteOpenHelper{
 
-	//The Android's default system path of your application database.
 	private static String DB_PATH = "/data/data/com.raemond.nextbus/databases/";
-
-	//private static String DB_NAME = "stops.db";
 	private static String DB_NAME = "myStops.db";
-
 	private static String DB_TABLE_NAME = "saved_stops";
 	private static String DB_ID = "_ID";
 	private static String DB_Agency_Tag = "agency_tag";
@@ -22,7 +18,10 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 	private static String DB_Stop_ID = "stop_id";
 	private static String DB_Stop_Formal = "stop_formal";
 	private static final int DB_Version = 1;
+	private SQLiteDatabase myDataBase; 
+	private final Context myContext;
 
+	
 	private static final String DICTIONARY_TABLE_CREATE ="CREATE TABLE " + DB_TABLE_NAME + " (" +
 		DB_ID + " INTEGER PRIMARY KEY, " +
 		DB_Agency_Tag + " TEXT, " +
@@ -32,23 +31,21 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 		DB_Stop_ID + " TEXT, " +
 		DB_Stop_Formal + " TEXT);";
 
-	private SQLiteDatabase myDataBase; 
-
-	private final Context myContext;
-
+	
 	public DataBaseHelper(Context context) {
 		super(context, DB_NAME, null, DB_Version);
 		this.myContext = context;
 	}	
 
+	
 	public void openDataBase() throws SQLException{
-
 		//Open the database
 		String myPath = DB_PATH + DB_NAME;
 		myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
 
 	}
 
+	
 	@Override
 	public synchronized void close() {
 
@@ -59,11 +56,13 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 
 	}
 
+	
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(DICTIONARY_TABLE_CREATE);
 	}
 
+	
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		if (oldVersion != newVersion) {

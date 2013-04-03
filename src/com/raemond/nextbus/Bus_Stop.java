@@ -16,7 +16,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -43,13 +42,7 @@ public class Bus_Stop {
 	}
 	
 	Bus_Stop(String m_agency,String m_formalAgency, String m_route, String m_formalRoute, String m_stop, String m_formalStop, FrameLayout m_currentFrame, Context m_context) {
-		//Log.v("formal Agency", formalAgency);
-		Log.v("agency", m_agency);
-		Log.v("stop", m_stop);
-		Log.v("route", m_route);
-		Log.v("formal stop", m_formalStop);
-		Log.v("formal route", m_formalRoute);
-		agencyRoute = m_formalAgency + ": " + m_formalRoute;//": Route " + m_formalRoute;
+		agencyRoute = m_formalAgency + ": " + m_formalRoute;
 		stoptext = "Stop: " + m_formalStop;
 		stop = m_stop;
 		formalStop = m_formalStop;
@@ -85,7 +78,6 @@ public class Bus_Stop {
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
-                        //Toast.makeText(context, "Clicked popup menu item " + item.getTitle(),
                     	switch (item.getItemId()) {
                     	case R.id.remove:
                     		MainActivity.removeCard(Bus_Stop.this);
@@ -100,9 +92,6 @@ public class Bus_Stop {
                     		Toast.makeText(context, "Set Reminder", Toast.LENGTH_SHORT).show();
                     		break;*/
                     	}
-                    	
-                    	/*Toast.makeText(context, "Clicked in " + formalStop,// duration)
-                                Toast.LENGTH_SHORT).show();*/
                         return true;
                     }
                 });
@@ -138,7 +127,6 @@ public class Bus_Stop {
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
-                        //Toast.makeText(context, "Clicked popup menu item " + item.getTitle(),
                     	switch (item.getItemId()) {
                     	case R.id.remove:
                     		MainActivity.removeCard(Bus_Stop.this);
@@ -153,9 +141,6 @@ public class Bus_Stop {
                     		Toast.makeText(context, "Set Reminder", Toast.LENGTH_SHORT).show();
                     		break;*/
                     	}
-                    	
-                    	/*Toast.makeText(context, "Clicked in " + formalStop,// duration)
-                                Toast.LENGTH_SHORT).show();*/
                         return true;
                     }
                 });
@@ -175,7 +160,6 @@ public class Bus_Stop {
 			URLConnection connection;
 			DocumentBuilder dBuilder;
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			Log.v("function","called");
 			try {
 				url = new URL(urls[0]);
 				connection = url.openConnection();
@@ -183,12 +167,10 @@ public class Bus_Stop {
 				Document doc = dBuilder.parse(connection.getInputStream());
 				
 				NodeList nList = doc.getElementsByTagName("prediction");
-				//System.out.println("Prediction for " + agency + " " + route + " " + stop);
 				for (int i=0; i<nList.getLength(); i++){
 					Node nNode = nList.item(i);
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
-						//Log.v("Bus Arrival Prediction", eElement.getAttribute("minutes") + " minutes");
 						return eElement.getAttribute("minutes");
 					}
 				}
@@ -199,7 +181,6 @@ public class Bus_Stop {
 		}
 
 		protected void onPostExecute(String result) {
-			Log.v("Bus Prediction",result);
 			TextView estimation = (TextView) currentFrame.findViewById(R.id.time);
 			estimation.setTypeface(MainActivity.robotoCond);
 			estimation.setText(result);
