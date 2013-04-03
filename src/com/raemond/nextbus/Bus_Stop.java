@@ -34,6 +34,7 @@ public class Bus_Stop {
 	public String stop = new String();
 	public String route = new String();
 	public String agency = new String();
+	public String formalRoute = new String();
 	public FrameLayout currentFrame;
 	Context context;
 	
@@ -41,17 +42,19 @@ public class Bus_Stop {
 		//Does nothing
 	}
 	
-	Bus_Stop(String m_agency,String m_formalAgency, String m_route, String m_stop, String m_formalStop, FrameLayout m_currentFrame, Context m_context) {
+	Bus_Stop(String m_agency,String m_formalAgency, String m_route, String m_formalRoute, String m_stop, String m_formalStop, FrameLayout m_currentFrame, Context m_context) {
 		//Log.v("formal Agency", formalAgency);
 		Log.v("agency", m_agency);
 		Log.v("stop", m_stop);
 		Log.v("route", m_route);
-		Log.v("formal stop", formalStop);
-		agencyRoute = m_formalAgency + ": Route " + m_route;
+		Log.v("formal stop", m_formalStop);
+		Log.v("formal route", m_formalRoute);
+		agencyRoute = m_formalAgency + ": " + m_formalRoute;//": Route " + m_formalRoute;
 		stoptext = "Stop: " + m_formalStop;
 		stop = m_stop;
 		formalStop = m_formalStop;
 		formalAgency = m_formalAgency;
+		formalRoute = m_formalRoute;
 		agency = m_agency;
 		route = m_route;
 		context = m_context;

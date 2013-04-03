@@ -155,6 +155,7 @@ public class MainActivity extends Activity {
 			    cv.put("agency_tag", stop.agency);
 			    cv.put("agency_formal", stop.formalAgency);
 			    cv.put("route", stop.route);
+			    cv.put("route_formal", stop.formalRoute);
 			    cv.put("stop_id", stop.stop);
 			    cv.put("stop_formal", stop.formalStop);
 			    stopDatabase.insert("saved_stops", null, cv);
@@ -230,11 +231,12 @@ public class MainActivity extends Activity {
 	
 	
 	public void restoreCards() {
-		String[] columns = {"_ID", "agency_tag", "agency_formal", "route", "stop_id", "stop_formal"};
+		String[] columns = {"_ID", "agency_tag", "agency_formal", "route", "route_formal", "stop_id", "stop_formal"};
 		Cursor cursor = stopDatabase.query("saved_stops", columns, null, null, null, null, null);
 	    int agencyTag = cursor.getColumnIndex("agency_tag");
 	    int agencyFormal = cursor.getColumnIndex("agency_formal");
 	    int route = cursor.getColumnIndex("route");
+	    int routeFormal = cursor.getColumnIndex("route_formal");
 	    int stopID = cursor.getColumnIndex("stop_id");
 	    int stopFormal = cursor.getColumnIndex("stop_formal");
 
@@ -245,7 +247,7 @@ public class MainActivity extends Activity {
 			linearLayout.addView(temp);
 			
 			Bus_Stop new_stop = new Bus_Stop(cursor.getString(agencyTag), cursor.getString(agencyFormal), cursor.getString(route),
-					cursor.getString(stopID), cursor.getString(stopFormal), temp, this);
+					cursor.getString(routeFormal), cursor.getString(stopID), cursor.getString(stopFormal), temp, this);
 			stops.add(new_stop);
 	    }
 	}
@@ -289,7 +291,7 @@ public class MainActivity extends Activity {
 					FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
 					linearLayout.addView(temp);
 					
-					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, route, stopmap.get(stop), stop, temp, MainActivity.this);
+					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, routemap.get(route), route, stopmap.get(stop), stop, temp, MainActivity.this);
 					stops.add(new_stop);
 					dialog.dismiss();
 				}
@@ -375,9 +377,9 @@ public class MainActivity extends Activity {
 			HttpGet url;    
 			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
+			MainActivity.routemap = new HashMap<String,String>();
 			try {
-				
+				Log.v("agency tag",agencymap.get(agency));
 				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a="+agencymap.get(agency));
 
 				HttpUriRequest request = url;
@@ -397,8 +399,9 @@ public class MainActivity extends Activity {
 					Node nNode = nList.item(i);
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
-						Log.v("route", eElement.getAttribute("title"));
+						//Log.v(eElement.getAttribute("title"),eElement.getAttribute("tag"));
 						MainActivity.routes.add(eElement.getAttribute("title"));
+						MainActivity.routemap.put(eElement.getAttribute("title"), eElement.getAttribute("tag"));
 					}
 				}
 			} catch (Exception e) {
@@ -422,12 +425,13 @@ public class MainActivity extends Activity {
 			HttpGet url;    
 			AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			
 			MainActivity.directionmap = new HashMap<String,String>();
+			Log.v("RetreiveDirections","called");
 
 			try {
-				
-				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
+				//Log.v("url","http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
+				//url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+route);
+				url = new HttpGet("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a="+agencymap.get(agency)+"&r="+routemap.get(route));
 				HttpUriRequest request = url;
 				request.addHeader("Accept-Encoding", "gzip, deflate");
 				DocumentBuilder builder = factory.newDocumentBuilder();
@@ -447,7 +451,6 @@ public class MainActivity extends Activity {
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
 						if (!"".equals(eElement.getAttribute("title")) && eElement.getAttribute("useForUI").equals("true")){
-
 							Log.v("Direction", eElement.getAttribute("title"));
 							MainActivity.directionmap.put(eElement.getAttribute("title"), eElement.getAttribute("tag"));
 							directions.add(eElement.getAttribute("title"));
@@ -565,7 +568,10 @@ public class MainActivity extends Activity {
     		stopList.clear();
     		direction = "";
     		stop = "";
-			route = parent.getItemAtPosition(pos).toString();
+			//route = routemap.get(parent.getItemAtPosition(pos).toString());//added the routemap get
+    		route = parent.getItemAtPosition(pos).toString();
+    		Log.v("route",route);
+    		//route = parent.getItemAtPosition(pos).toString().Case();//Hacked together change to make charm-city work. What I really should do is separate the route formal and route tag.
 			AsyncTask<String, Void, String[]> task = new RetrieveDirections().execute(" ");
 			try {
 				task.get(2000, TimeUnit.MILLISECONDS);
