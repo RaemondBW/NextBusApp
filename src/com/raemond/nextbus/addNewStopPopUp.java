@@ -3,7 +3,6 @@ package com.raemond.nextbus;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -60,22 +59,12 @@ public class addNewStopPopUp {
 		context = m_context;
 		linearLayout = m_linearLayout;
 		
-		//create the list of agencies
-		AsyncTask<String, Void, String[]> task = new RetrieveAgencies().execute(" ");
-		try {
-			task.get(1000, TimeUnit.MILLISECONDS);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		dialog = new Dialog((Context) context);
 		dialog.setContentView(R.layout.activity_main);
 		dialog.setTitle("pick your stop:");
-
-		agencyspinner = (Spinner) dialog.findViewById(R.id.agencySpinner);
-		ArrayAdapter<String> agencyArrayAdapter = new ArrayAdapter<String>(context,android.R.layout.simple_dropdown_item_1line,agencies);
-		agencyspinner.setAdapter(agencyArrayAdapter);
-		agencyspinner.setOnItemSelectedListener(new agencylistener());
+		
+		//create the list of agencies
+		new RetrieveAgencies().execute(" ");
 
 		Button dialogButton = (Button) dialog.findViewById(R.id.addBusStop);
 		dialogButton.setOnClickListener(new OnClickListener() {
@@ -92,7 +81,6 @@ public class addNewStopPopUp {
 				}
 			}
 		});
-
 		dialog.show();
 	}
 	
@@ -135,9 +123,11 @@ public class addNewStopPopUp {
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Do nothing
+			agencyspinner = (Spinner) dialog.findViewById(R.id.agencySpinner);
+			ArrayAdapter<String> agencyArrayAdapter = new ArrayAdapter<String>(context,android.R.layout.simple_dropdown_item_1line,agencies);
+			agencyspinner.setAdapter(agencyArrayAdapter);
+			agencyspinner.setOnItemSelectedListener(new agencylistener());
 		}
-
 	}
 	
 	
@@ -180,7 +170,11 @@ public class addNewStopPopUp {
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Do nothing
+			routespinner = (Spinner) dialog.findViewById(R.id.routeSpinner);
+			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(context,
+					android.R.layout.simple_dropdown_item_1line,routes);
+			routespinner.setAdapter(routeArrayAdapter);
+			routespinner.setOnItemSelectedListener(new routelistener());
 		}
 
 	}
@@ -230,7 +224,11 @@ public class addNewStopPopUp {
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Do nothing
+			directionspinner = (Spinner) dialog.findViewById(R.id.directionSpinner);
+			ArrayAdapter<String> directionArrayAdapter = new ArrayAdapter<String>(context,
+					android.R.layout.simple_dropdown_item_1line,directions);
+			directionspinner.setAdapter(directionArrayAdapter);
+			directionspinner.setOnItemSelectedListener(new directionlistener());
 		}
 
 	}
@@ -284,7 +282,11 @@ public class addNewStopPopUp {
 		}
 
 		protected void onPostExecute(String[] result) {
-			//Do nothing
+			stopspinner = (Spinner)dialog.findViewById(R.id.stopSpinner);
+			ArrayAdapter<String> stopArrayAdapter = new ArrayAdapter<String>(context,
+					android.R.layout.simple_dropdown_item_1line,stopList);
+			stopspinner.setAdapter(stopArrayAdapter);
+			stopspinner.setOnItemSelectedListener(new stoplistener());
 		}
 
 	}
@@ -301,17 +303,7 @@ public class addNewStopPopUp {
     		stop = "";
 			agency = parent.getItemAtPosition(pos).toString();
 			
-			AsyncTask<String, Void, String[]> task = new RetrieveRoutes().execute(" ");
-			try {
-				task.get(1000, TimeUnit.MILLISECONDS);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			routespinner = (Spinner) dialog.findViewById(R.id.routeSpinner);
-			ArrayAdapter<String> routeArrayAdapter = new ArrayAdapter<String>(context,
-					android.R.layout.simple_dropdown_item_1line,routes);
-			routespinner.setAdapter(routeArrayAdapter);
-			routespinner.setOnItemSelectedListener(new routelistener());
+			new RetrieveRoutes().execute(" ");
 		}
 
 		@Override
@@ -330,18 +322,7 @@ public class addNewStopPopUp {
     		stop = "";
 
     		route = parent.getItemAtPosition(pos).toString();
-			AsyncTask<String, Void, String[]> task = new RetrieveDirections().execute(" ");
-			try {
-				task.get(2000, TimeUnit.MILLISECONDS);
-			} catch (Exception e) {
-
-				e.printStackTrace();
-			}
-			directionspinner = (Spinner) dialog.findViewById(R.id.directionSpinner);
-			ArrayAdapter<String> directionArrayAdapter = new ArrayAdapter<String>(context,
-					android.R.layout.simple_dropdown_item_1line,directions);
-			directionspinner.setAdapter(directionArrayAdapter);
-			directionspinner.setOnItemSelectedListener(new directionlistener());
+			new RetrieveDirections().execute(" ");
 		}
 
 		@Override
@@ -357,17 +338,7 @@ public class addNewStopPopUp {
     		stopList.clear();
     		stop = "";
 			direction = parent.getItemAtPosition(pos).toString();
-			AsyncTask<String, Void, String[]> task = new RetrieveStops().execute(" ");
-			try {
-				task.get(2000, TimeUnit.MILLISECONDS);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			stopspinner = (Spinner)dialog.findViewById(R.id.stopSpinner);
-			ArrayAdapter<String> stopArrayAdapter = new ArrayAdapter<String>(context,
-					android.R.layout.simple_dropdown_item_1line,stopList);
-			stopspinner.setAdapter(stopArrayAdapter);
-			stopspinner.setOnItemSelectedListener(new stoplistener());
+			new RetrieveStops().execute(" ");
 		}
 
 		@Override
@@ -387,7 +358,6 @@ public class addNewStopPopUp {
 		@Override
 		public void onNothingSelected(AdapterView<?> arg0) {
 			//Do nothing
-
 		}
 	}
 }

@@ -9,5 +9,4 @@ public class RefreshTimer extends TimerTask {
 			stop.refreshStop();
 		}
 	}
-
 }
