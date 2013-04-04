@@ -1,5 +1,7 @@
 package com.raemond.nextbus;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import org.w3c.dom.NodeList;
 import com.raemond.nextbus.R;
 import com.raemond.nextbus.Bus_Stop;
 
+import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ActionBar;
@@ -27,6 +30,7 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -58,7 +62,18 @@ public class MainActivity extends Activity {
 		actionBar.show();
 		linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
 		
-		stopadder = new addNewStopPopUp(this, linearLayout);//testing
+		//load the popup window but don't show
+		stopadder = new addNewStopPopUp(this, linearLayout);
+		
+		//enable a 10 MiB cache for the http gets
+		try {
+			File httpCacheDir = new File(this.getCacheDir(), "http");
+			long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
+			HttpResponseCache.install(httpCacheDir, httpCacheSize);
+		}
+		catch (IOException e) {
+			Log.i("onCreate", "HTTP response cache installation failed:" + e);
+		}
 
 		boolean firstrun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("firstrun", true);
 		if (firstrun){
@@ -69,7 +84,6 @@ public class MainActivity extends Activity {
 			builder.setPositiveButton("get started", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					dialog.dismiss();
-					//new addNewStopPopUp(MainActivity.this,linearLayout);
 					stopadder.showDialog();
 				}
 			});
@@ -131,6 +145,10 @@ public class MainActivity extends Activity {
 		super.onStop();
 		stopDatabase.close();
 		myDbHelper.close();
+		HttpResponseCache cache = HttpResponseCache.getInstalled();
+		if (cache != null) {
+			cache.flush();
+		}
 	}
 	
 	
@@ -144,7 +162,6 @@ public class MainActivity extends Activity {
     		}
     		break;
     	case R.id.item_new:
-    		//new addNewStopPopUp(this,linearLayout);
     		stopadder.showDialog();
     		break;
     	}
