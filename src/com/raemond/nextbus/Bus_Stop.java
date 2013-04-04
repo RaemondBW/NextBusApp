@@ -43,7 +43,8 @@ public class Bus_Stop {
 	
 	Bus_Stop(String m_agency,String m_formalAgency, String m_route, String m_formalRoute, String m_stop, String m_formalStop, FrameLayout m_currentFrame, Context m_context) {
 		agencyRoute = m_formalAgency + ": " + m_formalRoute;
-		stoptext = "Stop: " + m_formalStop;
+		//stoptext = "Stop: " + m_formalStop;
+		stoptext = m_formalStop;
 		stop = m_stop;
 		formalStop = m_formalStop;
 		formalAgency = m_formalAgency;

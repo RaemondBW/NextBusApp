@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
 	static ArrayList <Bus_Stop> stops = new ArrayList<Bus_Stop>();
 	static Typeface robotoCond;
 	LinearLayout linearLayout;
+	addNewStopPopUp stopadder;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,8 @@ public class MainActivity extends Activity {
 		ActionBar actionBar = getActionBar();
 		actionBar.show();
 		linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
+		
+		stopadder = new addNewStopPopUp(this, linearLayout);//testing
 
 		boolean firstrun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("firstrun", true);
 		if (firstrun){
@@ -66,7 +69,8 @@ public class MainActivity extends Activity {
 			builder.setPositiveButton("get started", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					dialog.dismiss();
-					new addNewStopPopUp(MainActivity.this,linearLayout);
+					//new addNewStopPopUp(MainActivity.this,linearLayout);
+					stopadder.showDialog();
 				}
 			});
 			AlertDialog alertDialog = builder.create();
@@ -140,7 +144,8 @@ public class MainActivity extends Activity {
     		}
     		break;
     	case R.id.item_new:
-    		new addNewStopPopUp(this,linearLayout);
+    		//new addNewStopPopUp(this,linearLayout);
+    		stopadder.showDialog();
     		break;
     	}
   		return true;

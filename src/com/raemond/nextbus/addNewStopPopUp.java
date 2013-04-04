@@ -81,6 +81,10 @@ public class addNewStopPopUp {
 				}
 			}
 		});
+		//dialog.show();
+	}
+	
+	public void showDialog() {
 		dialog.show();
 	}
 	
