@@ -56,7 +56,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		robotoCond = Typeface.createFromAsset(this.getAssets(), "Roboto-Light.ttf");
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.test);
+		setContentView(R.layout.main_activity);
 		
 		ActionBar actionBar = getActionBar();
 		actionBar.show();

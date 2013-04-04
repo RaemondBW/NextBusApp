@@ -60,7 +60,7 @@ public class addNewStopPopUp {
 		linearLayout = m_linearLayout;
 		
 		dialog = new Dialog((Context) context);
-		dialog.setContentView(R.layout.activity_main);
+		dialog.setContentView(R.layout.add_stop_popup);
 		dialog.setTitle("pick your stop:");
 		
 		//create the list of agencies
