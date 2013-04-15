@@ -2,23 +2,14 @@ package com.raemond.nextbus;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Timer;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
 import com.raemond.nextbus.R;
 import com.raemond.nextbus.Bus_Stop;
 
 import android.net.http.HttpResponseCache;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -38,11 +29,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	
+	static MixpanelAPI mMixpanel;
 	DataBaseHelper myDbHelper;
 	static SQLiteDatabase stopDatabase;
 	Dialog dialog;
@@ -57,6 +48,7 @@ public class MainActivity extends Activity {
 		robotoCond = Typeface.createFromAsset(this.getAssets(), "Roboto-Light.ttf");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
+		mMixpanel = MixpanelAPI.getInstance(this, "1b833c37d8c3a3e826bae69f207556ce");
 		
 		ActionBar actionBar = getActionBar();
 		actionBar.show();
@@ -126,7 +118,9 @@ public class MainActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		refreshTimer.cancel();
+		//Log.v("onpause","run");
 		for (Bus_Stop stop : stops) {
+			//Log.v("onPauseStopID", stop.stop);
 			if (!checkDuplicateInDatabase(stop)) {
 				ContentValues cv = new ContentValues();
 			    cv.put("agency_tag", stop.agency);
@@ -143,6 +137,7 @@ public class MainActivity extends Activity {
 	
 	protected void onStop() {
 		super.onStop();
+		mMixpanel.flush();
 		stopDatabase.close();
 		myDbHelper.close();
 		HttpResponseCache cache = HttpResponseCache.getInstalled();
@@ -179,40 +174,9 @@ public class MainActivity extends Activity {
 	
 	
 	public boolean checkDuplicateInDatabase(Bus_Stop insertAttempt) {
+		//Log.v("checkDuplicate", "SELECT _ID FROM saved_stops WHERE stop_id = " + insertAttempt.stop);
 		return stopDatabase.rawQuery("SELECT _ID FROM saved_stops WHERE stop_id = " + insertAttempt.stop, null).moveToFirst();
-	}
-	
-	
-	class RetrievePrediction extends AsyncTask<String, Void, String> {
-		protected String doInBackground(String... urls){
-			URL url;
-			URLConnection connection;
-			DocumentBuilder dBuilder;
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			try {
-				url = new URL(urls[0]);
-				connection = url.openConnection();
-				dBuilder = dbFactory.newDocumentBuilder();
-				Document doc = dBuilder.parse(connection.getInputStream());
-				
-				NodeList nList = doc.getElementsByTagName("prediction");
-				for (int i=0; i<nList.getLength(); i++){
-					Node nNode = nList.item(i);
-					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-						Element eElement = (Element) nNode;
-						return eElement.getAttribute("minutes");
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return "None";
-		}
-
-		protected void onPostExecute(String result) {
-			TextView estimation = (TextView) findViewById(R.id.time);
-			estimation.setText(result);
-		}
+		//return true;
 	}
 	
 	

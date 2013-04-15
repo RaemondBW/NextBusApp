@@ -12,6 +12,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -21,6 +23,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -76,6 +79,16 @@ public class addNewStopPopUp {
 					linearLayout.addView(temp);
 					
 					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, routemap.get(route), route, stopmap.get(stop), stop, temp, context);
+					Log.v("onClick",new_stop.stop);
+					JSONObject properties = new JSONObject();
+			        try {
+						properties.put("Agency", agency);
+						properties.put("route", route);
+						properties.put("stop", stop);
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+			        MainActivity.mMixpanel.track("Stop was added", properties);
 					MainActivity.stops.add(new_stop);
 					dialog.dismiss();
 				}
@@ -180,7 +193,6 @@ public class addNewStopPopUp {
 			routespinner.setAdapter(routeArrayAdapter);
 			routespinner.setOnItemSelectedListener(new routelistener());
 		}
-
 	}
     
     
@@ -252,7 +264,7 @@ public class addNewStopPopUp {
 					Node nNode = nList.item(i);
 					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 						Element eElement = (Element) nNode;
-						if (!"".equals(eElement.getAttribute("title"))){
+						if (!"".equals(eElement.getAttribute("title")) && !"".equals(eElement.getAttribute("stopId"))){
 							m_stops.put(eElement.getAttribute("tag"), eElement.getAttribute("title"));
 							ids.put(eElement.getAttribute("tag"), eElement.getAttribute("stopId"));
 						}
@@ -269,10 +281,14 @@ public class addNewStopPopUp {
 							NodeList stop = nNode.getChildNodes();
 							for (int n=0; n<stop.getLength(); n++) {
 								Node stopData = stop.item(n);
+								
 								if (stopData.getNodeType() == Node.ELEMENT_NODE) {
 									Element individualStop = (Element) stopData;
-									stopList.add(m_stops.get(individualStop.getAttribute("tag")));
-									stopmap.put(m_stops.get(individualStop.getAttribute("tag")), ids.get(individualStop.getAttribute("tag")));
+									if (ids.get(individualStop.getAttribute("tag"))!= null) {//This is the problem with Charm city and a number of other roots there is multiples of same stop. 
+										//Some has an id some doesn't this is the ultimate problem. we should only add an item to the map that has a known id.
+										stopList.add(m_stops.get(individualStop.getAttribute("tag")));
+										stopmap.put(m_stops.get(individualStop.getAttribute("tag")), ids.get(individualStop.getAttribute("tag")));
+									}
 								}
 							}
 						}
@@ -357,6 +373,7 @@ public class addNewStopPopUp {
 		public void onItemSelected(AdapterView<?> parent, View arg1, int pos,
 				long id) {
 			stop = parent.getItemAtPosition(pos).toString();
+			Log.v("stopListener",stopmap.get(stop));
 		}
 
 		@Override
