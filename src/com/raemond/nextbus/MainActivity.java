@@ -10,6 +10,7 @@ import com.raemond.nextbus.R;
 import com.raemond.nextbus.Bus_Stop;
 
 import android.net.http.HttpResponseCache;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -61,11 +62,13 @@ public class MainActivity extends Activity {
 		
 		//enable a 10 MiB cache for the http gets
 		try {
-			File httpCacheDir = new File(this.getCacheDir(), "http");
-			long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
-			HttpResponseCache.install(httpCacheDir, httpCacheSize);
+			if (Build.VERSION.SDK_INT >= 14) {
+				File httpCacheDir = new File(this.getCacheDir(), "http");
+				long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
+				HttpResponseCache.install(httpCacheDir, httpCacheSize);
+			}
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			Log.i("onCreate", "HTTP response cache installation failed:" + e);
 		}
 
@@ -150,9 +153,11 @@ public class MainActivity extends Activity {
 		mMixpanel.flush();
 		stopDatabase.close();
 		myDbHelper.close();
-		HttpResponseCache cache = HttpResponseCache.getInstalled();
-		if (cache != null) {
-			cache.flush();
+		if (Build.VERSION.SDK_INT >= 14) {
+			HttpResponseCache cache = HttpResponseCache.getInstalled();
+			if (cache != null) {
+				cache.flush();
+			}
 		}
 	}
 	
