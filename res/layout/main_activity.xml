@@ -1,20 +1,72 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scrollView1"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/gray" >
-    
-    <LinearLayout
-        android:id="@+id/listOfStops"
+    android:background="@color/bluebackground"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/textView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="#00000000"
-        android:dividerHeight="10dp"
-        android:orientation="vertical"
-        android:paddingBottom="7dp"
-        android:paddingTop="7dp"
-        android:showDividers="middle" >
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:text="@string/nextBus"
+        android:textColor="@color/white" />
 
-    </LinearLayout>
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView1"
+        android:gravity="center_horizontal"
+        android:paddingBottom="14dp"
+        android:text="@string/favorites"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/white" />
 
-</ScrollView>
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="fill_parent"
+        android:layout_height="384dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView2"
+        android:background="@color/bluebackground" >
+		
+        <LinearLayout
+            android:id="@+id/ListOfStops"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="#00000000"
+            android:dividerHeight="10dp"
+            android:orientation="vertical"
+            android:paddingBottom="7dp"
+            android:paddingLeft="33dp"
+            android:paddingRight="33dp"
+            android:paddingTop="14dp"
+            android:showDividers="middle" >
+
+            <Button
+                android:id="@+id/add_busStop"
+                android:layout_width="wrap_content"
+                android:layout_height="168dp"
+                android:paddingTop="7dp"
+                android:background="@drawable/add_bus_stop" />
+            
+        </LinearLayout>
+        
+    </ScrollView>
+
+    <View
+        android:id="@+id/grdivider"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView2"
+        android:background="@drawable/dividergradient" />
+
+</RelativeLayout>

@@ -13,5 +13,7 @@
     <string name="time"></string>
     <string name="bus_arrives_in">bus arrives in:</string>
     <string name="minutes">minutes</string>
+    <string name="nextBus">NextBus</string>
+    <string name="favorites">Favorites</string>
 
 </resources>

@@ -1,98 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/bus_info"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bus_info"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/gray"
-    android:paddingBottom="7dp"
-    android:paddingLeft="15dp"
-    android:paddingRight="15dp"
-    android:paddingTop="7dp" >
-
-    <FrameLayout
+    android:background="@color/bluebackground"
+    android:minWidth="120dip" >
+	<!-- android:paddingBottom="7dp"
+    	android:paddingLeft="15dp"
+    	android:paddingRight="15dp"
+    	android:paddingTop="7dp" -->
+    <!--<FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/darkgray"
-        android:padding="2dp" >
+        android:padding="2dp" > -->
 
-        <FrameLayout
+        <!--  <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white" >
+             >-->
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical" >
+             <ImageView
+                 android:layout_width="252dp"
+                 android:layout_height="168dp"
+                 android:contentDescription="cardBackground"
+                 android:gravity="center_horizontal"
+                 android:src="@drawable/buscard" />
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
+             <!-- android:background="@color/white" -->
 
-                    <TextView
-                        android:id="@+id/TransitAgency_Route"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_horizontal"
-                        android:text="@string/agency"
-                        android:textAppearance="?android:attr/textAppearanceLarge" />
+             <RelativeLayout
+                 android:layout_width="253dp"
+                 android:layout_height="163dp"
+                 android:gravity="center_horizontal"
+                 android:paddingBottom="12dp"
+                 android:paddingLeft="12dp"
+                 android:paddingRight="12dp"
+                 android:paddingTop="12dp" >
 
-                    <Button
-                        android:id="@+id/menuButton"
-                        android:layout_width="17dp"
-                        android:layout_height="22dp"
-                        android:layout_alignParentRight="true"
-                        android:layout_centerVertical="true"
-                        android:background="@drawable/menudots" />
+                 <TextView
+                     android:id="@+id/bus_stop"
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_alignParentLeft="true"
+                     android:layout_below="@+id/TransitAgency_Route"
+                     android:gravity="center_horizontal"
+                     android:paddingBottom="2dp"
+                     android:text="@string/stop"
+                     android:textAppearance="?android:attr/textAppearanceSmall"
+                     android:textColor="@color/black"
+                     android:textColorHint="@color/black"
+                     android:textSize="11sp" />
 
-                </RelativeLayout>
+                 <TextView
+                     android:id="@+id/TransitAgency_Route"
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_alignParentLeft="true"
+                     android:layout_alignParentTop="true"
+                     android:gravity="center_horizontal"
+                     android:text="@string/agency"
+                     android:textAppearance="?android:attr/textAppearanceLarge"
+                     android:textColor="@color/black"
+                     android:textColorHint="@color/black"
+                     android:textSize="11sp" />
 
-                <TextView
-                    android:id="@+id/bus_stop"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:paddingBottom="2dp"
-                    android:text="@string/stop"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                 <TextView
+                     android:id="@+id/minutes"
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_alignParentBottom="true"
+                     android:gravity="center_horizontal"
+                     android:text="@string/minutes"
+                     android:textAppearance="?android:attr/textAppearanceSmall"
+                     android:textColor="@color/black"
+                     android:textColorHint="@color/black"
+                     android:textSize="11sp" />
 
-                <View
-                    android:id="@+id/separator"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dip"
-                    android:background="@color/darkgray" />
+                 <!--
+                 android:includeFontPadding="false" 
+                 android:layout_height="wrap_content"
+                 -->
 
-                <TextView
-                    android:id="@+id/bus_arrives_in"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:paddingTop="2dp"
-                    android:text="@string/bus_arrives_in"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                 <FrameLayout
+                     android:id="@+id/favoriteIMG"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:layout_alignBottom="@+id/minutes"
+                     android:layout_alignRight="@+id/minutes"
+                     android:foreground="@drawable/favorite" >
+                 </FrameLayout>
 
-                <TextView
-                    android:id="@+id/time"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:includeFontPadding="false"
-                    android:text="@string/time"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="100sp" />
+                 <TextView
+                     android:id="@+id/time"
+                     android:layout_width="match_parent"
+                     android:layout_height="match_parent"
+                     android:layout_alignLeft="@+id/bus_stop"
+                     android:layout_alignTop="@+id/bus_stop"
+                     android:gravity="center_horizontal"
+                     android:paddingTop="7dp"
+                     android:text="@string/time"
+                     android:textAppearance="?android:attr/textAppearanceLarge"
+                     android:textColor="@color/black"
+                     android:textColorHint="@color/black"
+                     android:textSize="80sp" />
 
-                <TextView
-                    android:id="@+id/minutes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:text="@string/minutes"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+             </RelativeLayout>
 
-            </LinearLayout>
         </FrameLayout>
 
-    </FrameLayout>
+<!--     </FrameLayout>--> 
 
-</FrameLayout>
+<!--  </FrameLayout>-->

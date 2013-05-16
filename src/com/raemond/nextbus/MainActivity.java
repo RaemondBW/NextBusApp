@@ -27,6 +27,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -50,9 +52,9 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.main_activity);
 		mMixpanel = MixpanelAPI.getInstance(this, "1b833c37d8c3a3e826bae69f207556ce");
 		
-		ActionBar actionBar = getActionBar();
-		actionBar.show();
-		linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
+		/*ActionBar actionBar = getActionBar();
+		actionBar.show();*/
+		linearLayout = (LinearLayout)findViewById(R.id.ListOfStops);
 		
 		//load the popup window but don't show
 		stopadder = new addNewStopPopUp(this, linearLayout);
@@ -102,13 +104,23 @@ public class MainActivity extends Activity {
 	  			elem.currentFrame.setVisibility(View.GONE);
 	  			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
-				linearLayout.addView(temp);
+				linearLayout.addView(temp,0);
 	  			elem.reAddFrame(temp);
 	  		}
 	  	}
 	  	for (Bus_Stop stop: stops) {
 			stop.refreshStop();
 		}
+	  	final Button button = (Button) findViewById(R.id.add_busStop);
+        button.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				stopadder.showDialog();
+			}
+        	
+        });
+	  	
 	  	refreshTimer = new RefreshTimer();
 	  	Timer t = new Timer();
 	  	t.schedule(refreshTimer, 30000, 30000);
@@ -118,9 +130,7 @@ public class MainActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		refreshTimer.cancel();
-		//Log.v("onpause","run");
 		for (Bus_Stop stop : stops) {
-			//Log.v("onPauseStopID", stop.stop);
 			if (!checkDuplicateInDatabase(stop)) {
 				ContentValues cv = new ContentValues();
 			    cv.put("agency_tag", stop.agency);
@@ -202,12 +212,13 @@ public class MainActivity extends Activity {
 
 	    for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
 	        final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			LinearLayout linearLayout = (LinearLayout)findViewById(R.id.listOfStops);
+			LinearLayout linearLayout = (LinearLayout)findViewById(R.id.ListOfStops);
 			FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
-			linearLayout.addView(temp);
+			linearLayout.addView(temp,0);
 			
 			Bus_Stop new_stop = new Bus_Stop(cursor.getString(agencyTag), cursor.getString(agencyFormal), cursor.getString(route),
 					cursor.getString(routeFormal), cursor.getString(stopID), cursor.getString(stopFormal), temp, this);
+			
 			stops.add(new_stop);
 	    }
 	}

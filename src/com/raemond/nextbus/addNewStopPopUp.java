@@ -76,7 +76,7 @@ public class addNewStopPopUp {
 				if (!agency.isEmpty() && !route.isEmpty() && !stop.isEmpty()) {
 					final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 					FrameLayout temp = (FrameLayout) inflater.inflate(R.layout.bus_info_fragment,null);
-					linearLayout.addView(temp);
+					linearLayout.addView(temp,0);
 					
 					Bus_Stop new_stop = new Bus_Stop(agencymap.get(agency), agency, routemap.get(route), route, stopmap.get(stop), stop, temp, context);
 					Log.v("onClick",new_stop.stop);
@@ -94,7 +94,6 @@ public class addNewStopPopUp {
 				}
 			}
 		});
-		//dialog.show();
 	}
 	
 	public void showDialog() {

@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -57,8 +58,8 @@ public class Bus_Stop {
 		
 		TextView minutesText = (TextView) currentFrame.findViewById(R.id.minutes);
 		minutesText.setTypeface(MainActivity.robotoCond);
-		TextView arrivalText = (TextView) currentFrame.findViewById(R.id.bus_arrives_in);
-		arrivalText.setTypeface(MainActivity.robotoCond);
+		//TextView arrivalText = (TextView) currentFrame.findViewById(R.id.bus_arrives_in);
+		//arrivalText.setTypeface(MainActivity.robotoCond);
 		
 		
 		TextView agencyRouteText = (TextView) currentFrame.findViewById(R.id.TransitAgency_Route);
@@ -71,7 +72,15 @@ public class Bus_Stop {
 		stopText.setTypeface(MainActivity.robotoCond);
 		new RetrievePrediction().execute(url);
 		
-		final Button button = (Button) currentFrame.findViewById(R.id.menuButton);
+		FrameLayout favorite = (FrameLayout) currentFrame.findViewById(R.id.favoriteIMG);
+		favorite.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				MainActivity.removeCard(Bus_Stop.this);
+			}
+		});
+		/*final Button button = (Button) currentFrame.findViewById(R.id.menuButton);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             	PopupMenu popup = new PopupMenu(context, button);
@@ -96,7 +105,7 @@ public class Bus_Stop {
 
                 popup.show();
             }
-        });
+        });*/
 	}
 	
 	public void reAddFrame(FrameLayout m_currentFrame) {
@@ -104,8 +113,8 @@ public class Bus_Stop {
 		
 		TextView minutesText = (TextView) currentFrame.findViewById(R.id.minutes);
 		minutesText.setTypeface(MainActivity.robotoCond);
-		TextView arrivalText = (TextView) currentFrame.findViewById(R.id.bus_arrives_in);
-		arrivalText.setTypeface(MainActivity.robotoCond);
+		//TextView arrivalText = (TextView) currentFrame.findViewById(R.id.bus_arrives_in);
+		//arrivalText.setTypeface(MainActivity.robotoCond);
 		
 		TextView agencyRouteText = (TextView) currentFrame.findViewById(R.id.TransitAgency_Route);
 		agencyRouteText.setTypeface(MainActivity.robotoCond);
@@ -117,7 +126,16 @@ public class Bus_Stop {
 		stopText.setTypeface(MainActivity.robotoCond);
 		new RetrievePrediction().execute(url);
 		
-		final Button button = (Button) currentFrame.findViewById(R.id.menuButton);
+		FrameLayout favorite = (FrameLayout) currentFrame.findViewById(R.id.favoriteIMG);
+		favorite.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Log.v("Clicked", "favorite button");
+				MainActivity.removeCard(Bus_Stop.this);
+			}
+		});
+		/*final Button button = (Button) currentFrame.findViewById(R.id.menuButton);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             	PopupMenu popup = new PopupMenu(context, button);
@@ -135,9 +153,9 @@ public class Bus_Stop {
                     		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                     		context.startActivity(intent);
                     		break;
-                    	/*case R.id.reminder:
-                    		Toast.makeText(context, "Set Reminder", Toast.LENGTH_SHORT).show();
-                    		break;*/
+                    	//case R.id.reminder:
+                    		//Toast.makeText(context, "Set Reminder", Toast.LENGTH_SHORT).show();
+                    		//break;
                     	}
                         return true;
                     }
@@ -145,7 +163,7 @@ public class Bus_Stop {
 
                 popup.show();
             }
-        });
+        });*/
 	}
 	
 	public void refreshStop() {
@@ -182,6 +200,7 @@ public class Bus_Stop {
 			TextView estimation = (TextView) currentFrame.findViewById(R.id.time);
 			estimation.setTypeface(MainActivity.robotoCond);
 			estimation.setText(result);
+			Log.v("bus estimation",result);
 		}
 	}
 }
