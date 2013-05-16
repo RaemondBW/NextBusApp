@@ -157,7 +157,7 @@ public class MainActivity extends Activity {
 	}
 	
 	
-	@Override
+	/*@Override
   	public boolean onOptionsItemSelected(MenuItem item){
     	switch(item.getItemId()) {
     	case R.id.item_refresh:
@@ -171,7 +171,7 @@ public class MainActivity extends Activity {
     		break;
     	}
   		return true;
-  	}
+  	}*/
 	
 	
 	@Override

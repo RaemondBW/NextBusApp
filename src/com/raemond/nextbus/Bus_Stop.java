@@ -12,7 +12,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -77,7 +79,25 @@ public class Bus_Stop {
 			
 			@Override
 			public void onClick(View v) {
-				MainActivity.removeCard(Bus_Stop.this);
+				AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+				alertDialog.setTitle("Warning");
+				alertDialog.setMessage("Are you sure you want to remove '" + formalStop + "' from your favorites?");
+				alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				       
+				    public void onClick(DialogInterface dialog, int id) {
+				    	// do nothing
+				    	dialog.cancel();
+				    }});
+				
+				alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+			    public void onClick(DialogInterface dialog, int id) {
+			    	MainActivity.removeCard(Bus_Stop.this);
+			    	dialog.cancel();
+			    }});
+			    
+			    alertDialog.show();
+				
 			}
 		});
 		/*final Button button = (Button) currentFrame.findViewById(R.id.menuButton);
@@ -132,7 +152,24 @@ public class Bus_Stop {
 			@Override
 			public void onClick(View v) {
 				Log.v("Clicked", "favorite button");
-				MainActivity.removeCard(Bus_Stop.this);
+				AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+				alertDialog.setTitle("Warning");
+				alertDialog.setMessage("Are you sure you want to remove '" + formalStop + "' from your favorites?");
+				alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				       
+				    public void onClick(DialogInterface dialog, int id) {
+				    	// do nothing
+				    	dialog.cancel();
+				    }});
+				
+				alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+			    public void onClick(DialogInterface dialog, int id) {
+			    	MainActivity.removeCard(Bus_Stop.this);
+			    	dialog.cancel();
+			    }});
+			    
+			    alertDialog.show();
 			}
 		});
 		/*final Button button = (Button) currentFrame.findViewById(R.id.menuButton);
